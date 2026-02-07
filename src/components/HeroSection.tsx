@@ -37,25 +37,24 @@ const HeroSection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
-          <Link to="/browse">
+          <Link to="/get-started">
             <Button
               size="lg"
               className="bg-gradient-gold text-primary-foreground font-body font-semibold text-base px-8 py-6 shadow-gold hover:opacity-90 transition-opacity"
             >
-              Browse Creators
+              Get Started
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-border text-foreground font-body font-medium text-base px-8 py-6 hover:bg-surface-hover transition-colors"
-            onClick={() =>
-              document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })
-            }
-          >
-            How It Works
-          </Button>
+          <Link to="/browse">
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-border text-foreground font-body font-medium text-base px-8 py-6 hover:bg-surface-hover transition-colors"
+            >
+              Browse Creators
+            </Button>
+          </Link>
         </div>
 
         {/* Stats */}
