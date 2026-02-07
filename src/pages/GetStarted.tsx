@@ -21,7 +21,49 @@ interface ProductData {
 interface MatchResult {
   influencer: Influencer;
   matchScore: number;
+  matchReason: string;
 }
+
+// Generate a custom match reason based on the influencer and product context
+const generateMatchReason = (
+  inf: Influencer,
+  productCategories: string[],
+  nicheMatch: boolean
+): string => {
+  const engagement = parseFloat(inf.engagement);
+  const conversion = parseFloat(inf.conversionRate);
+  const parts: string[] = [];
+
+  if (nicheMatch) {
+    parts.push(
+      `${inf.name}'s ${inf.niche} niche directly aligns with your ${productCategories.join(" & ")} product`
+    );
+  } else {
+    parts.push(
+      `${inf.name}'s ${inf.niche} audience has crossover appeal for your product category`
+    );
+  }
+
+  if (engagement >= 6) {
+    parts.push(`Their exceptional ${inf.engagement} engagement rate indicates a highly active and loyal community`);
+  } else if (engagement >= 4.5) {
+    parts.push(`A solid ${inf.engagement} engagement rate shows consistent audience interaction`);
+  } else {
+    parts.push(`With ${inf.followers} followers, they offer broad reach across diverse demographics`);
+  }
+
+  if (conversion >= 5) {
+    parts.push(`${inf.conversionRate} conversion rate is well above average, driving strong purchase intent`);
+  } else if (conversion >= 3.5) {
+    parts.push(`${inf.conversionRate} conversion rate means reliable ROI on sponsored content`);
+  }
+
+  if (inf.avgViews) {
+    parts.push(`averaging ${inf.avgViews} views per post`);
+  }
+
+  return parts.join(". ") + ".";
+};
 
 // Category → relevant niches mapping
 const categoryNicheMap: Record<string, string[]> = {
@@ -66,8 +108,9 @@ const getMatchResults = (product: ProductData): MatchResult[] => {
       score += Math.floor(Math.random() * 8);
 
       const finalScore = Math.min(score, 99);
+      const matchReason = generateMatchReason(inf, product.categories, nicheMatch);
 
-      return { influencer: inf, matchScore: finalScore };
+      return { influencer: inf, matchScore: finalScore, matchReason };
     })
     .sort((a, b) => b.matchScore - a.matchScore);
 };
@@ -263,6 +306,7 @@ const GetStarted = () => {
                     key={result.influencer.id}
                     influencer={result.influencer}
                     matchScore={result.matchScore}
+                    matchReason={result.matchReason}
                     index={i}
                     onSelect={handleSelectCreator}
                   />
