@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface GeneratedVariationsProps {
   posts: GeneratedPost[];
@@ -42,6 +43,7 @@ const GeneratedVariations = ({
   onRegenerateAll,
   isRegenerating,
 }: GeneratedVariationsProps) => {
+  const { t } = useLanguage();
   const [postFeedback, setPostFeedback] = useState<Record<string, string>>({});
   const [showFeedback, setShowFeedback] = useState<Record<string, boolean>>({});
 
@@ -56,10 +58,10 @@ const GeneratedVariations = ({
     <div className="space-y-10">
       <div>
         <h2 className="text-xl font-display font-semibold text-foreground">
-          Generated Variations
+          {t.booking.variations.title}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Select a variation, edit captions directly, or provide feedback to regenerate.
+          {t.booking.variations.selectBest}
         </p>
       </div>
 
@@ -104,7 +106,7 @@ const GeneratedVariations = ({
                     disabled={isPostRegenerating}
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Provide Feedback
+                    {t.booking.variations.provideFeedback}
                   </Button>
                 ) : (
                   <Button
@@ -122,10 +124,10 @@ const GeneratedVariations = ({
             {showFeedback[postKey] && (
               <div className="p-4 bg-muted/30 rounded-lg border border-border space-y-3">
                 <p className="text-sm font-medium text-foreground">
-                  What would you like to change?
+                  {t.booking.variations.provideFeedback}
                 </p>
                 <Textarea
-                  placeholder="e.g., Make the tone more professional, add a stronger CTA, use different emojis..."
+                  placeholder={t.booking.variations.feedbackPlaceholder}
                   value={postFeedback[postKey] || ""}
                   onChange={(e) =>
                     setPostFeedback((prev) => ({ ...prev, [postKey]: e.target.value }))
@@ -141,12 +143,12 @@ const GeneratedVariations = ({
                   {isPostRegenerating ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Regenerating...
+                      {t.booking.variations.regenerating}
                     </>
                   ) : (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Regenerate All Variations
+                      {t.booking.variations.regenerateAll}
                     </>
                   )}
                 </Button>
@@ -197,6 +199,7 @@ const VariationCard = ({
   variationNumber,
   isRegenerating,
 }: VariationCardProps) => {
+  const { t } = useLanguage();
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editedCaption, setEditedCaption] = useState(variation.caption);
   const [showFeedbackInput, setShowFeedbackInput] = useState(false);
@@ -274,7 +277,7 @@ const VariationCard = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-muted-foreground">
               <MessageSquare className="w-3.5 h-3.5" />
-              <span className="text-xs font-medium">Caption</span>
+              <span className="text-xs font-medium">{t.booking.variations.caption}</span>
             </div>
             {!isEditingCaption && (
               <Button
@@ -287,7 +290,7 @@ const VariationCard = ({
                 }}
               >
                 <Pencil className="w-3 h-3 mr-1" />
-                Edit
+                {t.booking.variations.edit}
               </Button>
             )}
           </div>
@@ -303,7 +306,7 @@ const VariationCard = ({
               <div className="flex gap-2">
                 <Button size="sm" className="h-7 text-xs" onClick={handleSaveCaption}>
                   <Check className="w-3 h-3 mr-1" />
-                  Save
+                  {t.booking.variations.save}
                 </Button>
                 <Button
                   size="sm"
@@ -311,7 +314,7 @@ const VariationCard = ({
                   className="h-7 text-xs"
                   onClick={handleCancelEdit}
                 >
-                  Cancel
+                  {t.booking.variations.cancel}
                 </Button>
               </div>
             </div>
@@ -338,12 +341,12 @@ const VariationCard = ({
               }}
             >
               <RefreshCw className="w-3 h-3 mr-1" />
-              Regenerate with Feedback
+              {t.booking.variations.regenerate}
             </Button>
           ) : (
             <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
               <Input
-                placeholder="What to change..."
+                placeholder={t.booking.variations.feedbackPlaceholder}
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 className="h-8 text-xs"
@@ -351,7 +354,7 @@ const VariationCard = ({
               <div className="flex gap-2">
                 <Button size="sm" className="h-7 text-xs flex-1" onClick={handleRegenerate}>
                   <RefreshCw className="w-3 h-3 mr-1" />
-                  Regenerate
+                  {t.booking.variations.regenerate}
                 </Button>
                 <Button
                   size="sm"
@@ -376,10 +379,10 @@ const VariationCard = ({
           {isSelected ? (
             <>
               <CheckCircle className="w-4 h-4 mr-2" />
-              Selected
+              {t.booking.variations.selected}
             </>
           ) : (
-            "Select This Variation"
+            t.booking.variations.select
           )}
         </Button>
       </CardContent>

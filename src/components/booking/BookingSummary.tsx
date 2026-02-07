@@ -13,6 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Calendar, CreditCard } from "lucide-react";
 import { useState } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface BookingSummaryProps {
   creator: Influencer;
@@ -27,6 +28,7 @@ const BookingSummary = ({
   onConfirm,
   disabled,
 }: BookingSummaryProps) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
   // Calculate total based on selected variations and platforms
@@ -57,7 +59,7 @@ const BookingSummary = ({
       <DialogTrigger asChild>
         <Button size="lg" disabled={disabled}>
           <CreditCard className="w-4 h-4 mr-2" />
-          Review & Book (${total})
+          {t.booking.summary.confirmBooking} (${total})
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
@@ -68,16 +70,16 @@ const BookingSummary = ({
               alt={creator.name}
               className="w-10 h-10 rounded-full object-cover"
             />
-            <span>Confirm Booking with {creator.name}</span>
+            <span>{t.booking.book} {creator.name}</span>
           </DialogTitle>
           <DialogDescription>
-            Review your content plan before confirming.
+            {t.booking.summary.title}
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
           <div className="space-y-3">
-            {posts.map((post, i) => {
+            {posts.map((post) => {
               if (post.selectedVariation === null) return null;
               const variation = post.variations[post.selectedVariation];
               const price = creator.pricing["post-description"];
@@ -95,7 +97,7 @@ const BookingSummary = ({
                         {post.planEntry.postType}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {post.planEntry.platform} • {variation.tone} tone
+                        {post.planEntry.platform} • {variation.tone}
                       </p>
                     </div>
                   </div>
@@ -113,11 +115,11 @@ const BookingSummary = ({
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="w-4 h-4" />
               <span className="text-sm">
-                {selectedCount} post{selectedCount !== 1 ? "s" : ""} scheduled
+                {selectedCount} {t.booking.summary.postsSelected}
               </span>
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-xs text-muted-foreground">{t.booking.summary.estimatedCost}</p>
               <p className="text-xl font-display font-bold text-foreground">
                 ${total}
               </p>
@@ -127,11 +129,11 @@ const BookingSummary = ({
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
+            {t.booking.variations.cancel}
           </Button>
           <Button onClick={handleConfirm}>
             <CheckCircle className="w-4 h-4 mr-2" />
-            Confirm Booking
+            {t.booking.summary.confirmBooking}
           </Button>
         </DialogFooter>
       </DialogContent>

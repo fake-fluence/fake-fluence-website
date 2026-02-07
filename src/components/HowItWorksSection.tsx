@@ -1,38 +1,41 @@
 import { Upload, Search, CreditCard, Rocket } from "lucide-react";
-
-const steps = [
-  {
-    icon: Upload,
-    title: "Upload Your Product",
-    description: "Share your product photos and a brief description of what you're selling.",
-  },
-  {
-    icon: Search,
-    title: "Get Matched",
-    description: "Our AI suggests the best creators based on audience fit, engagement, and conversion rates.",
-  },
-  {
-    icon: CreditCard,
-    title: "Choose Your Content",
-    description: "Select your creator and content type — photo post, post with caption, or full video.",
-  },
-  {
-    icon: Rocket,
-    title: "Launch & Track",
-    description: "Your sponsored content goes live. Track views, clicks, and conversions in real-time.",
-  },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const HowItWorksSection = () => {
+  const { t } = useLanguage();
+
+  const steps = [
+    {
+      icon: Upload,
+      title: t.howItWorks.steps.upload.title,
+      description: t.howItWorks.steps.upload.description,
+    },
+    {
+      icon: Search,
+      title: t.howItWorks.steps.match.title,
+      description: t.howItWorks.steps.match.description,
+    },
+    {
+      icon: CreditCard,
+      title: t.howItWorks.steps.choose.title,
+      description: t.howItWorks.steps.choose.description,
+    },
+    {
+      icon: Rocket,
+      title: t.howItWorks.steps.launch.title,
+      description: t.howItWorks.steps.launch.description,
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-24 bg-background">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-            How It <span className="text-gradient-gold">Works</span>
+            {t.howItWorks.title} <span className="text-gradient-gold">{t.howItWorks.titleHighlight}</span>
           </h2>
           <p className="text-muted-foreground font-body text-lg max-w-xl mx-auto">
-            From product upload to sponsored post — in four simple steps.
+            {t.howItWorks.description}
           </p>
         </div>
 

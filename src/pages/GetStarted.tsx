@@ -8,6 +8,7 @@ import { influencers, type Influencer, type ContentType } from "@/data/influence
 import { ArrowLeft, Sparkles, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type Step = "upload" | "results" | "preview";
 
@@ -118,6 +119,7 @@ const getMatchResults = (product: ProductData): MatchResult[] => {
 const MIN_MATCH_SCORE = 65;
 
 const GetStarted = () => {
+  const { t } = useLanguage();
   const [step, setStep] = useState<Step>("upload");
   const [isLoading, setIsLoading] = useState(false);
   const [productData, setProductData] = useState<ProductData | null>(null);
@@ -173,16 +175,15 @@ const GetStarted = () => {
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/20 bg-surface/50 backdrop-blur-sm mb-6">
                   <Sparkles className="w-4 h-4 text-primary" />
                   <span className="text-sm font-body text-muted-foreground">
-                    AI-Powered Matching
+                    {t.hero.badge}
                   </span>
                 </div>
                 <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                  <span className="text-foreground">Upload Your </span>
-                  <span className="text-gradient-gold">Product</span>
+                  <span className="text-foreground">{t.getStarted.title} </span>
+                  <span className="text-gradient-gold">{t.getStarted.titleHighlight}</span>
                 </h1>
                 <p className="text-muted-foreground font-body text-lg max-w-xl mx-auto">
-                  Share your product details and our AI will match you with the
-                  best creators for maximum impact.
+                  {t.getStarted.description}
                 </p>
               </>
             )}
@@ -201,19 +202,18 @@ const GetStarted = () => {
                     }}
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
-                    Start Over
+                    {t.booking.back}
                   </Button>
                 </div>
                 <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                  <span className="text-foreground">Your </span>
-                  <span className="text-gradient-gold">Matches</span>
+                  <span className="text-foreground">{t.getStarted.matches.title.split(" ")[0]} </span>
+                  <span className="text-gradient-gold">{t.getStarted.matches.title.split(" ").slice(1).join(" ")}</span>
                 </h1>
                 <p className="text-muted-foreground font-body text-lg max-w-xl mx-auto">
-                  We found {filteredResults.length} fitting creators for{" "}
-                  <span className="text-foreground font-medium">
-                    {productData?.name}
-                  </span>
-                  . Select one to generate content.
+                  {t.getStarted.matches.description.replace("these creators", `${filteredResults.length} creators`)}
+                  {productData?.name && (
+                    <> for <span className="text-foreground font-medium">{productData.name}</span></>
+                  )}
                 </p>
               </>
             )}
@@ -267,12 +267,12 @@ const GetStarted = () => {
                     {showModifySearch ? (
                       <>
                         <X className="w-3.5 h-3.5" />
-                        Cancel
+                        {t.booking.variations.cancel}
                       </>
                     ) : (
                       <>
                         <SlidersHorizontal className="w-3.5 h-3.5" />
-                        Modify Search
+                        {t.booking.variations.edit}
                       </>
                     )}
                   </Button>
@@ -283,7 +283,7 @@ const GetStarted = () => {
               {showModifySearch && productData && (
                 <div className="p-6 rounded-2xl bg-card border border-border mb-6">
                   <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-                    Modify Your Search
+                    {t.booking.variations.edit}
                   </h3>
                   <ProductUploadForm
                     onSubmit={handleUpload}

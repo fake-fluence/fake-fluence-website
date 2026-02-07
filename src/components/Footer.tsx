@@ -1,7 +1,10 @@
 import { Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const Footer = () => {
+  const { t } = useLanguage();
+
   return (
     <footer className="py-12 border-t border-border bg-background">
       <div className="container mx-auto px-6">
@@ -13,7 +16,7 @@ const Footer = () => {
             </span>
           </Link>
           <p className="text-sm text-muted-foreground font-body">
-            © 2026 InfluenceAI. All AI personas are fictional.
+            {t.footer.copyright}
           </p>
         </div>
       </div>
