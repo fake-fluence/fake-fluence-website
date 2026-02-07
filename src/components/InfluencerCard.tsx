@@ -101,14 +101,36 @@ const InfluencerCard = ({ influencer, index, showFullPricing = false }: Influenc
           </div>
         )}
 
-        <Link to={`/browse?creator=${influencer.id}`}>
-          <Button
-            className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity"
-            size="sm"
-          >
-            {showFullPricing ? `Book for $${influencer.pricing[selectedType]}` : "View Pricing"}
-          </Button>
-        </Link>
+        {showFullPricing ? (
+          <div className="flex gap-2">
+            <Link to={`/browse?creator=${influencer.id}`} className="flex-1">
+              <Button
+                variant="outline"
+                className="w-full font-body font-semibold text-sm"
+                size="sm"
+              >
+                View Details
+              </Button>
+            </Link>
+            <Link to={`/book/${influencer.id}`} className="flex-1">
+              <Button
+                className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity"
+                size="sm"
+              >
+                Book Now
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <Link to={`/browse?creator=${influencer.id}`}>
+            <Button
+              className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity"
+              size="sm"
+            >
+              View Pricing
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );
