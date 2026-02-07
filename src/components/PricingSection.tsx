@@ -1,46 +1,29 @@
+import { Image, FileText, Video, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Check, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const plans = [
+const contentTypes = [
   {
-    name: "Starter",
-    price: 99,
-    description: "Perfect for testing the waters",
-    features: [
-      "1 sponsored post per month",
-      "Basic audience targeting",
-      "48-hour delivery",
-      "Performance report",
-    ],
-    popular: false,
+    icon: Image,
+    title: "Photo Post",
+    description: "A single sponsored image posted to the creator's feed",
+    startingPrice: 99,
+    includes: ["High-quality AI-generated image", "Product placement", "Hashtag optimization"],
   },
   {
-    name: "Growth",
-    price: 299,
-    description: "Scale your brand reach",
-    features: [
-      "5 sponsored posts per month",
-      "Advanced audience targeting",
-      "24-hour delivery",
-      "Detailed analytics dashboard",
-      "A/B testing support",
-      "Priority support",
-    ],
+    icon: FileText,
+    title: "Post + Caption",
+    description: "Sponsored image with an engaging, tailored caption",
+    startingPrice: 169,
+    includes: ["Everything in Photo Post", "Persuasive AI-written caption", "Call-to-action included", "Story mention"],
     popular: true,
   },
   {
-    name: "Enterprise",
-    price: 799,
-    description: "Full-scale campaigns",
-    features: [
-      "Unlimited sponsored posts",
-      "Custom audience segments",
-      "Same-day delivery",
-      "Real-time analytics",
-      "Dedicated account manager",
-      "Custom AI persona creation",
-    ],
-    popular: false,
+    icon: Video,
+    title: "Full Video",
+    description: "A short-form video review or product showcase",
+    startingPrice: 349,
+    includes: ["15-60 second AI video", "Product demonstration", "Background music & effects", "Caption & hashtags", "Reel + Story post"],
   },
 ];
 
@@ -50,69 +33,86 @@ const PricingSection = () => {
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Simple <span className="text-gradient-gold">Pricing</span>
+            Content <span className="text-gradient-gold">Pricing</span>
           </h2>
-          <p className="text-muted-foreground font-body text-lg max-w-xl mx-auto">
-            Choose the plan that fits your marketing goals. No hidden fees.
+          <p className="text-muted-foreground font-body text-lg max-w-2xl mx-auto">
+            Pricing varies per creator based on followers, engagement, audience fit, and conversion history.
+            Here's what each content type starts at.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {plans.map((plan) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+          {contentTypes.map((type) => (
             <div
-              key={plan.name}
+              key={type.title}
               className={`relative rounded-xl p-8 border transition-all duration-300 ${
-                plan.popular
+                type.popular
                   ? "bg-card border-gold/40 glow-gold scale-105"
                   : "bg-card border-border hover:border-gold/20"
               }`}
             >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-gold text-primary-foreground text-xs font-body font-bold flex items-center gap-1">
-                  <Zap className="w-3 h-3" />
+              {type.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-gold text-primary-foreground text-xs font-body font-bold">
                   Most Popular
                 </div>
               )}
 
+              <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center mb-5">
+                <type.icon className="w-6 h-6 text-primary" />
+              </div>
+
               <h3 className="font-display text-xl font-semibold text-foreground mb-1">
-                {plan.name}
+                {type.title}
               </h3>
               <p className="text-sm text-muted-foreground font-body mb-6">
-                {plan.description}
+                {type.description}
               </p>
 
               <div className="mb-6">
-                <span className="text-4xl font-display font-bold text-gradient-gold">
-                  ${plan.price}
-                </span>
-                <span className="text-muted-foreground font-body text-sm">
-                  /month
-                </span>
+                <span className="text-xs text-muted-foreground font-body">Starting at</span>
+                <div>
+                  <span className="text-4xl font-display font-bold text-gradient-gold">
+                    ${type.startingPrice}
+                  </span>
+                  <span className="text-muted-foreground font-body text-sm"> /per post</span>
+                </div>
               </div>
 
               <ul className="space-y-3 mb-8">
-                {plan.features.map((feature) => (
+                {type.includes.map((item) => (
                   <li
-                    key={feature}
-                    className="flex items-center gap-2 text-sm font-body text-secondary-foreground"
+                    key={item}
+                    className="flex items-start gap-2 text-sm font-body text-secondary-foreground"
                   >
-                    <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                    {feature}
+                    <span className="text-primary mt-0.5">✓</span>
+                    {item}
                   </li>
                 ))}
               </ul>
 
-              <Button
-                className={`w-full font-body font-semibold ${
-                  plan.popular
-                    ? "bg-gradient-gold text-primary-foreground hover:opacity-90"
-                    : "bg-surface text-foreground border border-border hover:bg-surface-hover"
-                } transition-all`}
-              >
-                Get Started
-              </Button>
+              <Link to="/browse">
+                <Button
+                  className={`w-full font-body font-semibold ${
+                    type.popular
+                      ? "bg-gradient-gold text-primary-foreground hover:opacity-90"
+                      : "bg-surface text-foreground border border-border hover:bg-surface-hover"
+                  } transition-all`}
+                >
+                  Browse Creators
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
             </div>
           ))}
+        </div>
+
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground font-body">
+            Final pricing depends on the creator's reach, audience quality, and historical performance.{" "}
+            <Link to="/browse" className="text-primary hover:underline">
+              Browse all creators →
+            </Link>
+          </p>
         </div>
       </div>
     </section>

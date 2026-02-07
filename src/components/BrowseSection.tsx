@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { categories, influencers, type Category } from "@/data/influencers";
 import InfluencerCard from "./InfluencerCard";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const BrowseSection = () => {
   const [activeCategory, setActiveCategory] = useState<Category>("all");
 
   const filtered =
     activeCategory === "all"
-      ? influencers
-      : influencers.filter((i) => i.category === activeCategory);
+      ? influencers.slice(0, 4)
+      : influencers.filter((i) => i.category === activeCategory).slice(0, 4);
 
   return (
     <section id="browse" className="py-24 bg-gradient-dark">
@@ -41,11 +44,24 @@ const BrowseSection = () => {
           ))}
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Grid — show max 4 on landing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filtered.map((influencer, i) => (
             <InfluencerCard key={influencer.id} influencer={influencer} index={i} />
           ))}
+        </div>
+
+        {/* CTA */}
+        <div className="text-center mt-12">
+          <Link to="/browse">
+            <Button
+              size="lg"
+              className="bg-gradient-gold text-primary-foreground font-body font-semibold text-base px-8 py-6 shadow-gold hover:opacity-90 transition-opacity"
+            >
+              View All Creators
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

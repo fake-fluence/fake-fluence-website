@@ -9,6 +9,14 @@ import influencer8 from "@/assets/influencer-8.jpg";
 
 export type Category = "all" | "women" | "men" | "pets" | "other";
 
+export type ContentType = "post" | "post-description" | "video";
+
+export interface ContentPricing {
+  post: number;
+  "post-description": number;
+  video: number;
+}
+
 export interface Influencer {
   id: string;
   name: string;
@@ -16,11 +24,20 @@ export interface Influencer {
   avatar: string;
   category: Category;
   followers: string;
+  followersNum: number;
   engagement: string;
   niche: string;
-  pricePerPost: number;
+  pricing: ContentPricing;
+  avgViews: string;
+  conversionRate: string;
   verified: boolean;
 }
+
+export const contentTypeLabels: Record<ContentType, string> = {
+  post: "Photo Post",
+  "post-description": "Post + Caption",
+  video: "Full Video",
+};
 
 export const influencers: Influencer[] = [
   {
@@ -30,9 +47,12 @@ export const influencers: Influencer[] = [
     avatar: influencer1,
     category: "women",
     followers: "1.2M",
+    followersNum: 1200000,
     engagement: "4.8%",
     niche: "Fashion & Lifestyle",
-    pricePerPost: 299,
+    pricing: { post: 199, "post-description": 299, video: 599 },
+    avgViews: "450K",
+    conversionRate: "3.2%",
     verified: true,
   },
   {
@@ -42,9 +62,12 @@ export const influencers: Influencer[] = [
     avatar: influencer2,
     category: "women",
     followers: "890K",
+    followersNum: 890000,
     engagement: "5.2%",
     niche: "Beauty & Travel",
-    pricePerPost: 249,
+    pricing: { post: 149, "post-description": 249, video: 499 },
+    avgViews: "320K",
+    conversionRate: "4.1%",
     verified: true,
   },
   {
@@ -54,9 +77,12 @@ export const influencers: Influencer[] = [
     avatar: influencer3,
     category: "men",
     followers: "2.1M",
+    followersNum: 2100000,
     engagement: "3.9%",
     niche: "Fitness & Motivation",
-    pricePerPost: 399,
+    pricing: { post: 299, "post-description": 449, video: 899 },
+    avgViews: "780K",
+    conversionRate: "2.8%",
     verified: true,
   },
   {
@@ -66,9 +92,12 @@ export const influencers: Influencer[] = [
     avatar: influencer4,
     category: "men",
     followers: "750K",
+    followersNum: 750000,
     engagement: "6.1%",
     niche: "Fitness & Wellness",
-    pricePerPost: 199,
+    pricing: { post: 129, "post-description": 199, video: 399 },
+    avgViews: "280K",
+    conversionRate: "5.3%",
     verified: false,
   },
   {
@@ -78,9 +107,12 @@ export const influencers: Influencer[] = [
     avatar: influencer5,
     category: "pets",
     followers: "3.4M",
+    followersNum: 3400000,
     engagement: "8.2%",
     niche: "Pet Life & Products",
-    pricePerPost: 499,
+    pricing: { post: 399, "post-description": 599, video: 1199 },
+    avgViews: "1.2M",
+    conversionRate: "6.1%",
     verified: true,
   },
   {
@@ -90,9 +122,12 @@ export const influencers: Influencer[] = [
     avatar: influencer6,
     category: "pets",
     followers: "1.8M",
+    followersNum: 1800000,
     engagement: "7.5%",
     niche: "Cat Content & Reviews",
-    pricePerPost: 349,
+    pricing: { post: 249, "post-description": 399, video: 799 },
+    avgViews: "650K",
+    conversionRate: "5.5%",
     verified: true,
   },
   {
@@ -102,9 +137,12 @@ export const influencers: Influencer[] = [
     avatar: influencer7,
     category: "women",
     followers: "560K",
+    followersNum: 560000,
     engagement: "5.8%",
     niche: "Travel & Lifestyle",
-    pricePerPost: 179,
+    pricing: { post: 99, "post-description": 169, video: 349 },
+    avgViews: "190K",
+    conversionRate: "4.7%",
     verified: false,
   },
   {
@@ -114,9 +152,12 @@ export const influencers: Influencer[] = [
     avatar: influencer8,
     category: "other",
     followers: "920K",
+    followersNum: 920000,
     engagement: "4.5%",
     niche: "Fashion & Editorial",
-    pricePerPost: 279,
+    pricing: { post: 179, "post-description": 279, video: 549 },
+    avgViews: "340K",
+    conversionRate: "3.8%",
     verified: true,
   },
 ];
@@ -127,4 +168,16 @@ export const categories: { id: Category; label: string; emoji: string }[] = [
   { id: "men", label: "Men", emoji: "💪" },
   { id: "pets", label: "Pets", emoji: "🐾" },
   { id: "other", label: "Others", emoji: "🌟" },
+];
+
+export const niches = [
+  "All Niches",
+  "Fashion & Lifestyle",
+  "Beauty & Travel",
+  "Fitness & Motivation",
+  "Fitness & Wellness",
+  "Pet Life & Products",
+  "Cat Content & Reviews",
+  "Travel & Lifestyle",
+  "Fashion & Editorial",
 ];
