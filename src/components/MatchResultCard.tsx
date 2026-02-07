@@ -6,11 +6,12 @@ import { useState } from "react";
 interface MatchResultCardProps {
   influencer: Influencer;
   matchScore: number;
+  matchReason: string;
   index: number;
   onSelect: (influencer: Influencer, contentType: ContentType) => void;
 }
 
-const MatchResultCard = ({ influencer, matchScore, index, onSelect }: MatchResultCardProps) => {
+const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect }: MatchResultCardProps) => {
   const [selectedType, setSelectedType] = useState<ContentType>("post");
 
   const getScoreColor = (score: number) => {
@@ -31,7 +32,6 @@ const MatchResultCard = ({ influencer, matchScore, index, onSelect }: MatchResul
           alt={influencer.name}
           className="w-full h-full object-cover"
         />
-        {/* Match score badge */}
         <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-background/90 backdrop-blur-sm">
           <span className={`text-xs font-body font-bold ${getScoreColor(matchScore)}`}>
             {matchScore}% match
@@ -76,11 +76,11 @@ const MatchResultCard = ({ influencer, matchScore, index, onSelect }: MatchResul
           </div>
         </div>
 
-        {/* Match reason */}
+        {/* Custom match reason */}
         <div className="flex items-start gap-2 mb-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
           <TrendingUp className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground font-body leading-relaxed">
-            Strong audience alignment with your product category. High engagement rate suggests authentic follower interaction and better conversion potential.
+            {matchReason}
           </p>
         </div>
       </div>

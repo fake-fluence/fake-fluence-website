@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Upload, X, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Upload, X, Sparkles } from "lucide-react";
 
 interface ProductUploadFormProps {
-  onSubmit: (data: { images: string[]; name: string; description: string; category: string }) => void;
+  onSubmit: (data: { images: string[]; name: string; description: string; categories: string[] }) => void;
   isLoading?: boolean;
+  initialData?: { images: string[]; name: string; description: string; categories: string[] } | null;
 }
 
 const productCategories = [
@@ -22,12 +23,18 @@ const productCategories = [
   "Other",
 ];
 
-const ProductUploadForm = ({ onSubmit, isLoading }: ProductUploadFormProps) => {
-  const [images, setImages] = useState<string[]>([]);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
+const ProductUploadForm = ({ onSubmit, isLoading, initialData }: ProductUploadFormProps) => {
+  const [images, setImages] = useState<string[]>(initialData?.images ?? []);
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [description, setDescription] = useState(initialData?.description ?? "");
+  const [categories, setCategories] = useState<string[]>(initialData?.categories ?? []);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const toggleCategory = (cat: string) => {
+    setCategories((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+    );
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -49,8 +56,8 @@ const ProductUploadForm = ({ onSubmit, isLoading }: ProductUploadFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (images.length === 0 || !name || !description || !category) return;
-    onSubmit({ images, name, description, category });
+    if (images.length === 0 || !name || !description || categories.length === 0) return;
+    onSubmit({ images, name, description, categories });
   };
 
   return (
@@ -120,19 +127,22 @@ const ProductUploadForm = ({ onSubmit, isLoading }: ProductUploadFormProps) => {
         />
       </div>
 
-      {/* Category */}
+      {/* Categories - multi-select */}
       <div className="space-y-2">
         <Label className="text-foreground font-body font-medium">
-          Product Category
+          Product Categories
+          <span className="text-muted-foreground font-normal ml-2 text-xs">
+            (select all that apply)
+          </span>
         </Label>
         <div className="flex flex-wrap gap-2">
           {productCategories.map((cat) => (
             <button
               key={cat}
               type="button"
-              onClick={() => setCategory(cat)}
+              onClick={() => toggleCategory(cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-body transition-all ${
-                category === cat
+                categories.includes(cat)
                   ? "bg-primary/20 border border-primary/40 text-foreground"
                   : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:border-border/80"
               }`}
@@ -160,7 +170,7 @@ const ProductUploadForm = ({ onSubmit, isLoading }: ProductUploadFormProps) => {
 
       <Button
         type="submit"
-        disabled={images.length === 0 || !name || !description || !category || isLoading}
+        disabled={images.length === 0 || !name || !description || categories.length === 0 || isLoading}
         className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-base py-6 shadow-gold hover:opacity-90 transition-opacity disabled:opacity-40"
         size="lg"
       >
