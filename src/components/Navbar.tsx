@@ -54,7 +54,7 @@ const Navbar = () => {
         </div>
 
         <Link
-          to="/browse"
+          to="/get-started"
           className="px-5 py-2 rounded-full bg-gradient-gold text-primary-foreground font-body text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           Get Started
