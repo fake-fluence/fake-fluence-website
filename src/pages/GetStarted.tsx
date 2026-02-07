@@ -5,7 +5,7 @@ import ProductUploadForm from "@/components/ProductUploadForm";
 import MatchResultCard from "@/components/MatchResultCard";
 import ContentPreviewCarousel from "@/components/ContentPreviewCarousel";
 import { influencers, type Influencer, type ContentType } from "@/data/influencers";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Sparkles, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,44 +15,137 @@ interface ProductData {
   images: string[];
   name: string;
   description: string;
-  category: string;
+  categories: string[];
 }
 
-// Simulate AI matching with scores
-const getMatchResults = (product: ProductData) => {
-  const categoryMap: Record<string, string[]> = {
-    "Fashion & Apparel": ["Fashion & Lifestyle", "Fashion & Editorial"],
-    "Beauty & Skincare": ["Beauty & Travel", "Fashion & Lifestyle"],
-    "Health & Fitness": ["Fitness & Motivation", "Fitness & Wellness"],
-    "Food & Beverage": ["Travel & Lifestyle", "Fashion & Lifestyle"],
-    "Technology & Gadgets": ["Fashion & Editorial", "Fitness & Motivation"],
-    "Home & Living": ["Travel & Lifestyle", "Cat Content & Reviews"],
-    "Travel & Experiences": ["Beauty & Travel", "Travel & Lifestyle"],
-    "Pet Products": ["Pet Life & Products", "Cat Content & Reviews"],
-    Other: ["Fashion & Editorial", "Travel & Lifestyle"],
-  };
+interface MatchResult {
+  influencer: Influencer;
+  matchScore: number;
+  matchReason: string;
+}
 
-  const relevantNiches = categoryMap[product.category] || [];
+// Category → relevant niches mapping
+const categoryNicheMap: Record<string, string[]> = {
+  "Fashion & Apparel": ["Fashion & Lifestyle", "Fashion & Editorial"],
+  "Beauty & Skincare": ["Beauty & Travel", "Fashion & Lifestyle"],
+  "Health & Fitness": ["Fitness & Motivation", "Fitness & Wellness"],
+  "Food & Beverage": ["Travel & Lifestyle", "Fashion & Lifestyle"],
+  "Technology & Gadgets": ["Fashion & Editorial", "Fitness & Motivation"],
+  "Home & Living": ["Travel & Lifestyle", "Cat Content & Reviews"],
+  "Travel & Experiences": ["Beauty & Travel", "Travel & Lifestyle"],
+  "Pet Products": ["Pet Life & Products", "Cat Content & Reviews"],
+  Other: ["Fashion & Editorial", "Travel & Lifestyle"],
+};
+
+// Generate a custom match reason based on the influencer and product context
+const generateMatchReason = (
+  inf: Influencer,
+  score: number,
+  productCategories: string[],
+  nicheMatch: boolean
+): string => {
+  const engagement = parseFloat(inf.engagement);
+  const conversion = parseFloat(inf.conversionRate);
+  const parts: string[] = [];
+
+  // Niche alignment
+  if (nicheMatch) {
+    parts.push(
+      `${inf.name}'s ${inf.niche} niche directly aligns with your ${productCategories.join(" & ")} product`
+    );
+  } else {
+    parts.push(
+      `${inf.name}'s ${inf.niche} audience has crossover appeal for your product category`
+    );
+  }
+
+  // Engagement insight
+  if (engagement >= 6) {
+    parts.push(
+      `Their exceptional ${inf.engagement} engagement rate indicates a highly active and loyal community`
+    );
+  } else if (engagement >= 4.5) {
+    parts.push(
+      `A solid ${inf.engagement} engagement rate shows consistent audience interaction`
+    );
+  } else {
+    parts.push(
+      `With ${inf.followers} followers, they offer broad reach across diverse demographics`
+    );
+  }
+
+  // Conversion insight
+  if (conversion >= 5) {
+    parts.push(
+      `${inf.conversionRate} conversion rate is well above average, driving strong purchase intent`
+    );
+  } else if (conversion >= 3.5) {
+    parts.push(
+      `${inf.conversionRate} conversion rate means reliable ROI on sponsored content`
+    );
+  }
+
+  // Views insight
+  if (inf.avgViews) {
+    parts.push(`averaging ${inf.avgViews} views per post`);
+  }
+
+  return parts.join(". ") + ".";
+};
+
+// Simulate AI matching with scores
+const getMatchResults = (product: ProductData): MatchResult[] => {
+  const allRelevantNiches = product.categories.flatMap(
+    (cat) => categoryNicheMap[cat] || []
+  );
+  const uniqueNiches = [...new Set(allRelevantNiches)];
 
   return influencers
     .map((inf) => {
-      let score = Math.floor(Math.random() * 20) + 60;
-      if (relevantNiches.includes(inf.niche)) score += 20;
-      if (inf.verified) score += 5;
+      let score = 50;
+      const nicheMatch = uniqueNiches.includes(inf.niche);
+
+      // Niche alignment bonus (biggest factor)
+      if (nicheMatch) score += 25;
+
+      // Engagement bonus
+      const engagement = parseFloat(inf.engagement);
+      score += Math.floor(engagement * 3);
+
+      // Conversion rate bonus
       const convRate = parseFloat(inf.conversionRate);
-      score += Math.floor(convRate * 2);
-      return { influencer: inf, matchScore: Math.min(score, 99) };
+      score += Math.floor(convRate * 3);
+
+      // Verified bonus
+      if (inf.verified) score += 5;
+
+      // Small random factor for variety
+      score += Math.floor(Math.random() * 8);
+
+      const finalScore = Math.min(score, 99);
+
+      const matchReason = generateMatchReason(
+        inf,
+        finalScore,
+        product.categories,
+        nicheMatch
+      );
+
+      return { influencer: inf, matchScore: finalScore, matchReason };
     })
     .sort((a, b) => b.matchScore - a.matchScore);
 };
+
+const MIN_MATCH_SCORE = 65;
 
 const GetStarted = () => {
   const [step, setStep] = useState<Step>("upload");
   const [isLoading, setIsLoading] = useState(false);
   const [productData, setProductData] = useState<ProductData | null>(null);
-  const [results, setResults] = useState<{ influencer: Influencer; matchScore: number }[]>([]);
+  const [results, setResults] = useState<MatchResult[]>([]);
   const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
   const [selectedContentType, setSelectedContentType] = useState<ContentType>("post");
+  const [showModifySearch, setShowModifySearch] = useState(false);
   const { toast } = useToast();
 
   const handleUpload = (data: ProductData) => {
@@ -65,6 +158,7 @@ const GetStarted = () => {
       setResults(matched);
       setIsLoading(false);
       setStep("results");
+      setShowModifySearch(false);
     }, 2000);
   };
 
@@ -82,6 +176,9 @@ const GetStarted = () => {
     setStep("results");
     setSelectedInfluencer(null);
   };
+
+  // Filter results: only show accounts above the minimum match score
+  const filteredResults = results.filter((r) => r.matchScore >= MIN_MATCH_SCORE);
 
   return (
     <main className="min-h-screen bg-background">
@@ -110,23 +207,29 @@ const GetStarted = () => {
               </>
             )}
 
-            {step === "results" && (
+            {step === "results" && !showModifySearch && (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mb-4 text-muted-foreground hover:text-foreground font-body"
-                  onClick={() => setStep("upload")}
-                >
-                  <ArrowLeft className="w-4 h-4 mr-1" />
-                  Upload New Product
-                </Button>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground font-body"
+                    onClick={() => {
+                      setStep("upload");
+                      setProductData(null);
+                      setResults([]);
+                    }}
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Start Over
+                  </Button>
+                </div>
                 <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
                   <span className="text-foreground">Your </span>
                   <span className="text-gradient-gold">Matches</span>
                 </h1>
                 <p className="text-muted-foreground font-body text-lg max-w-xl mx-auto">
-                  We found {results.length} creators that align with{" "}
+                  We found {filteredResults.length} fitting creators for{" "}
                   <span className="text-foreground font-medium">
                     {productData?.name}
                   </span>
@@ -147,7 +250,7 @@ const GetStarted = () => {
 
           {step === "results" && (
             <div className="max-w-4xl mx-auto space-y-4">
-              {/* Product summary */}
+              {/* Product summary + modify search */}
               {productData && (
                 <div className="flex items-center gap-4 p-4 rounded-xl bg-surface border border-border mb-8">
                   {productData.images[0] && (
@@ -161,25 +264,73 @@ const GetStarted = () => {
                     <h3 className="font-display text-base font-semibold text-foreground truncate">
                       {productData.name}
                     </h3>
-                    <p className="text-xs text-primary font-body">
-                      {productData.category}
-                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {productData.categories.map((cat) => (
+                        <span
+                          key={cat}
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-body"
+                        >
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
                     <p className="text-xs text-muted-foreground font-body mt-0.5 truncate">
                       {productData.description}
                     </p>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-shrink-0 font-body text-xs gap-1.5"
+                    onClick={() => setShowModifySearch(!showModifySearch)}
+                  >
+                    {showModifySearch ? (
+                      <>
+                        <X className="w-3.5 h-3.5" />
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <SlidersHorizontal className="w-3.5 h-3.5" />
+                        Modify Search
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
 
-              {results.map((result, i) => (
-                <MatchResultCard
-                  key={result.influencer.id}
-                  influencer={result.influencer}
-                  matchScore={result.matchScore}
-                  index={i}
-                  onSelect={handleSelectCreator}
-                />
-              ))}
+              {/* Modify search form (inline) */}
+              {showModifySearch && productData && (
+                <div className="p-6 rounded-2xl bg-card border border-border mb-6">
+                  <h3 className="font-display text-lg font-semibold text-foreground mb-4">
+                    Modify Your Search
+                  </h3>
+                  <ProductUploadForm
+                    onSubmit={handleUpload}
+                    isLoading={isLoading}
+                    initialData={productData}
+                  />
+                </div>
+              )}
+
+              {/* Filtered results info */}
+              {!showModifySearch && results.length > filteredResults.length && (
+                <p className="text-xs text-muted-foreground font-body text-center">
+                  Showing {filteredResults.length} of {results.length} creators — only accounts with strong audience alignment (≥{MIN_MATCH_SCORE}% match) are displayed.
+                </p>
+              )}
+
+              {!showModifySearch &&
+                filteredResults.map((result, i) => (
+                  <MatchResultCard
+                    key={result.influencer.id}
+                    influencer={result.influencer}
+                    matchScore={result.matchScore}
+                    matchReason={result.matchReason}
+                    index={i}
+                    onSelect={handleSelectCreator}
+                  />
+                ))}
             </div>
           )}
         </div>
