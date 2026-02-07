@@ -194,10 +194,10 @@ const GetStarted = () => {
                     <img
                       src={productData.images[0]}
                       alt={productData.name}
-                      className="w-16 h-16 rounded-lg object-cover border border-border"
+                      className="w-16 h-16 rounded-lg object-cover border border-border flex-shrink-0"
                     />
                   )}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <h3 className="font-display text-base font-semibold text-foreground truncate">
                       {productData.name}
                     </h3>
@@ -218,7 +218,7 @@ const GetStarted = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-shrink-0 font-body text-xs gap-1.5"
+                    className="flex-shrink-0 font-body text-xs gap-1.5 self-center"
                     onClick={() => setShowModifySearch(!showModifySearch)}
                   >
                     {showModifySearch ? (
