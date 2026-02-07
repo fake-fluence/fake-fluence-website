@@ -1,6 +1,7 @@
 import heroBg from "@/assets/hero-bg.jpg";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -31,25 +32,27 @@ const HeroSection = () => {
         </h1>
 
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-body leading-relaxed opacity-0 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          Browse our curated AI influencers. Choose your audience. Launch
-          sponsored posts that convert — without the drama.
+          Upload your product, get matched with the perfect AI creators, and
+          launch sponsored posts that convert — at any budget.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
-          <Button
-            size="lg"
-            className="bg-gradient-gold text-primary-foreground font-body font-semibold text-base px-8 py-6 shadow-gold hover:opacity-90 transition-opacity"
-            onClick={() =>
-              document.getElementById("browse")?.scrollIntoView({ behavior: "smooth" })
-            }
-          >
-            Browse Creators
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <Link to="/browse">
+            <Button
+              size="lg"
+              className="bg-gradient-gold text-primary-foreground font-body font-semibold text-base px-8 py-6 shadow-gold hover:opacity-90 transition-opacity"
+            >
+              Browse Creators
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </Link>
           <Button
             variant="outline"
             size="lg"
             className="border-border text-foreground font-body font-medium text-base px-8 py-6 hover:bg-surface-hover transition-colors"
+            onClick={() =>
+              document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })
+            }
           >
             How It Works
           </Button>
