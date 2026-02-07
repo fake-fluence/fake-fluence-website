@@ -1,10 +1,28 @@
-# Hack_Nation_2026
+# Influencer AI Studio — Backend
 
-## OpenAI Image & Video Script (`openai_media.py`)
+FastAPI backend for **image and video generation/editing** (OpenAI). Use the REST API or the CLI script.
 
-Uses OpenAI’s image and video APIs to generate or edit images and videos from the command line.
+**Setup:** `pip install -r requirements.txt` (or `uv sync`). Put your OpenAI API key in a `.env` file at the **repo root** (copy `.env.example` to `.env` and add `API_KEY=...` or `OPENAI_API_KEY=...`). Do not commit `.env` (it’s in `.gitignore`).
 
-**Setup:** `pip install -r requirements.txt`. Put your OpenAI API key in a `.env` file at the **repo root** (copy `.env.example` to `.env` and add `API_KEY=...` or `OPENAI_API_KEY=...`). The script loads `.env` from the repo root, so both frontend and backend can share one env file. Do not commit `.env` (it’s in `.gitignore`).
+---
+
+## Running the API
+
+From the `Backend/` directory:
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+- **Docs:** http://localhost:8000/docs  
+- **Health:** http://localhost:8000/health  
+- **API base:** `/api` (e.g. `POST /api/images/generate`, `POST /api/videos/generate`)
+
+See **DEPLOYMENT.md** for deploying on Render or Railway (free tiers).
+
+---
+
+## CLI: OpenAI Image & Video Script (`openai_media.py`)
 
 ---
 
