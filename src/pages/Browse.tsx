@@ -153,7 +153,7 @@ const Browse = () => {
                   </SelectItem>
                   {niches.filter(n => n !== "All Niches").map((niche) => (
                     <SelectItem key={niche} value={niche}>
-                      {niche}
+                      {t.niches[niche] || niche}
                     </SelectItem>
                   ))}
                 </SelectContent>

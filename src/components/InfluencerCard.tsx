@@ -59,7 +59,7 @@ const InfluencerCard = ({ influencer, index, showFullPricing = false }: Influenc
           {influencer.handle}
         </p>
         <p className="text-xs text-primary font-body font-medium mb-4">
-          {influencer.niche}
+          {t.niches[influencer.niche] || influencer.niche}
         </p>
 
         {/* Stats */}

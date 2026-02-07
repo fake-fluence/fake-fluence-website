@@ -45,6 +45,17 @@ export interface TranslationKeys {
   footer: {
     copyright: string;
   };
+  niches: Record<string, string>;
+  variationTones: {
+    Professional: string;
+    Casual: string;
+    Bold: string;
+  };
+  contentTypes: {
+    post: string;
+    "post-description": string;
+    video: string;
+  };
   influencer: {
     followers: string;
     engagement: string;
@@ -97,6 +108,7 @@ export interface TranslationKeys {
     };
     variations: {
       title: string;
+      variation: string;
       selectBest: string;
       caption: string;
       imageDescription: string;
@@ -304,6 +316,7 @@ export const en: TranslationKeys = {
     },
     variations: {
       title: "Generated Variations",
+      variation: "Variation",
       selectBest: "Select the best variation for each post",
       caption: "Caption",
       imageDescription: "Image Description",
@@ -356,6 +369,26 @@ export const en: TranslationKeys = {
   },
 
   // Get Started Page
+  niches: {
+    "Fashion & Lifestyle": "Fashion & Lifestyle",
+    "Beauty & Travel": "Beauty & Travel",
+    "Fitness & Motivation": "Fitness & Motivation",
+    "Fitness & Wellness": "Fitness & Wellness",
+    "Pet Life & Products": "Pet Life & Products",
+    "Cat Content & Reviews": "Cat Content & Reviews",
+    "Travel & Lifestyle": "Travel & Lifestyle",
+    "Fashion & Editorial": "Fashion & Editorial",
+  },
+  variationTones: {
+    Professional: "Professional",
+    Casual: "Casual",
+    Bold: "Bold",
+  },
+  contentTypes: {
+    post: "Photo Post",
+    "post-description": "Post + Caption",
+    video: "Full Video",
+  },
   getStarted: {
     title: "Get",
     titleHighlight: "Started",

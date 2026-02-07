@@ -245,9 +245,9 @@ const VariationCard = ({
 
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <span className="text-muted-foreground">Variation {variationNumber}</span>
+          <span className="text-muted-foreground">{t.booking.variations.variation} {variationNumber}</span>
           <Badge variant="secondary" className="text-xs">
-            {variation.tone}
+            {t.variationTones[variation.tone as keyof typeof t.variationTones] || variation.tone}
           </Badge>
         </CardTitle>
       </CardHeader>

@@ -119,6 +119,7 @@ export const fr: TranslationKeys = {
     },
     variations: {
       title: "Variantes générées",
+      variation: "Variante",
       selectBest: "Sélectionnez la meilleure variante pour chaque publication",
       caption: "Légende",
       imageDescription: "Description de l'image",
@@ -166,6 +167,26 @@ export const fr: TranslationKeys = {
       price: "Prix",
     },
     noResults: "Aucun créateur trouvé correspondant à vos critères.",
+  },
+  niches: {
+    "Fashion & Lifestyle": "Mode & Lifestyle",
+    "Beauty & Travel": "Beauté & Voyage",
+    "Fitness & Motivation": "Fitness & Motivation",
+    "Fitness & Wellness": "Fitness & Bien-être",
+    "Pet Life & Products": "Vie d'animaux & Produits",
+    "Cat Content & Reviews": "Contenu chats & Avis",
+    "Travel & Lifestyle": "Voyage & Lifestyle",
+    "Fashion & Editorial": "Mode & Éditorial",
+  },
+  variationTones: {
+    Professional: "Professionnel",
+    Casual: "Décontracté",
+    Bold: "Audacieux",
+  },
+  contentTypes: {
+    post: "Post photo",
+    "post-description": "Post + Légende",
+    video: "Vidéo complète",
   },
   getStarted: {
     title: "Commencer",
