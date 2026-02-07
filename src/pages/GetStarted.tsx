@@ -21,7 +21,6 @@ interface ProductData {
 interface MatchResult {
   influencer: Influencer;
   matchScore: number;
-  matchReason: string;
 }
 
 // Category → relevant niches mapping
@@ -35,62 +34,6 @@ const categoryNicheMap: Record<string, string[]> = {
   "Travel & Experiences": ["Beauty & Travel", "Travel & Lifestyle"],
   "Pet Products": ["Pet Life & Products", "Cat Content & Reviews"],
   Other: ["Fashion & Editorial", "Travel & Lifestyle"],
-};
-
-// Generate a custom match reason based on the influencer and product context
-const generateMatchReason = (
-  inf: Influencer,
-  score: number,
-  productCategories: string[],
-  nicheMatch: boolean
-): string => {
-  const engagement = parseFloat(inf.engagement);
-  const conversion = parseFloat(inf.conversionRate);
-  const parts: string[] = [];
-
-  // Niche alignment
-  if (nicheMatch) {
-    parts.push(
-      `${inf.name}'s ${inf.niche} niche directly aligns with your ${productCategories.join(" & ")} product`
-    );
-  } else {
-    parts.push(
-      `${inf.name}'s ${inf.niche} audience has crossover appeal for your product category`
-    );
-  }
-
-  // Engagement insight
-  if (engagement >= 6) {
-    parts.push(
-      `Their exceptional ${inf.engagement} engagement rate indicates a highly active and loyal community`
-    );
-  } else if (engagement >= 4.5) {
-    parts.push(
-      `A solid ${inf.engagement} engagement rate shows consistent audience interaction`
-    );
-  } else {
-    parts.push(
-      `With ${inf.followers} followers, they offer broad reach across diverse demographics`
-    );
-  }
-
-  // Conversion insight
-  if (conversion >= 5) {
-    parts.push(
-      `${inf.conversionRate} conversion rate is well above average, driving strong purchase intent`
-    );
-  } else if (conversion >= 3.5) {
-    parts.push(
-      `${inf.conversionRate} conversion rate means reliable ROI on sponsored content`
-    );
-  }
-
-  // Views insight
-  if (inf.avgViews) {
-    parts.push(`averaging ${inf.avgViews} views per post`);
-  }
-
-  return parts.join(". ") + ".";
 };
 
 // Simulate AI matching with scores
@@ -124,14 +67,7 @@ const getMatchResults = (product: ProductData): MatchResult[] => {
 
       const finalScore = Math.min(score, 99);
 
-      const matchReason = generateMatchReason(
-        inf,
-        finalScore,
-        product.categories,
-        nicheMatch
-      );
-
-      return { influencer: inf, matchScore: finalScore, matchReason };
+      return { influencer: inf, matchScore: finalScore };
     })
     .sort((a, b) => b.matchScore - a.matchScore);
 };
@@ -159,6 +95,7 @@ const GetStarted = () => {
       setIsLoading(false);
       setStep("results");
       setShowModifySearch(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }, 2000);
   };
 
@@ -326,7 +263,6 @@ const GetStarted = () => {
                     key={result.influencer.id}
                     influencer={result.influencer}
                     matchScore={result.matchScore}
-                    matchReason={result.matchReason}
                     index={i}
                     onSelect={handleSelectCreator}
                   />
