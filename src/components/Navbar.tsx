@@ -29,18 +29,6 @@ const Navbar = () => {
           </Link>
           {isHome ? (
             <button
-              onClick={() => scrollToSection("pricing")}
-              className="hover:text-foreground transition-colors"
-            >
-              Pricing
-            </button>
-          ) : (
-            <Link to="/#pricing" className="hover:text-foreground transition-colors">
-              Pricing
-            </Link>
-          )}
-          {isHome ? (
-            <button
               onClick={() => scrollToSection("how-it-works")}
               className="hover:text-foreground transition-colors"
             >
