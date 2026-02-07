@@ -4,7 +4,7 @@ import { influencers, type Influencer } from "@/data/influencers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContentPlanForm, { type ContentPlanEntry } from "@/components/booking/ContentPlanForm";
-import GeneratedVariations from "@/components/booking/GeneratedVariations";
+import SwipeableVariations from "@/components/booking/SwipeableVariations";
 import BookingSummary from "@/components/booking/BookingSummary";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle } from "lucide-react";
@@ -328,7 +328,7 @@ const BookCreator = () => {
 
           {step === "review" && (
             <div className="space-y-8">
-              <GeneratedVariations
+              <SwipeableVariations
                 posts={generatedPosts}
                 onSelectVariation={handleVariationSelect}
                 onUpdateCaption={handleUpdateCaption}
