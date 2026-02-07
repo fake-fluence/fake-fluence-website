@@ -8,6 +8,7 @@ import GeneratedVariations from "@/components/booking/GeneratedVariations";
 import BookingSummary from "@/components/booking/BookingSummary";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type BookingStep = "plan" | "review" | "confirmed";
 
@@ -29,6 +30,7 @@ export interface PostVariation {
 const BookCreator = () => {
   const { creatorId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [creator, setCreator] = useState<Influencer | null>(null);
   const [step, setStep] = useState<BookingStep>("plan");
   const [contentPlan, setContentPlan] = useState<ContentPlanEntry[]>([]);
@@ -255,6 +257,12 @@ const BookCreator = () => {
 
   if (!creator) return null;
 
+  const stepLabels: Record<BookingStep, string> = {
+    plan: t.booking.steps.plan,
+    review: t.booking.steps.review,
+    confirmed: t.booking.steps.confirmed,
+  };
+
   return (
     <div className="min-h-screen bg-background font-body">
       <Navbar />
@@ -269,7 +277,7 @@ const BookCreator = () => {
               className="mb-4 -ml-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              {t.booking.back}
             </Button>
 
             <div className="flex items-center gap-4">
@@ -280,7 +288,7 @@ const BookCreator = () => {
               />
               <div>
                 <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Book {creator.name}
+                  {t.booking.book} {creator.name}
                 </h1>
                 <p className="text-muted-foreground">
                   {creator.handle} • {creator.niche}
@@ -291,7 +299,7 @@ const BookCreator = () => {
 
           {/* Progress Steps */}
           <div className="flex items-center gap-4 mb-10">
-            {["plan", "review", "confirmed"].map((s, i) => (
+            {(["plan", "review", "confirmed"] as BookingStep[]).map((s, i) => (
               <div key={s} className="flex items-center gap-2">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
@@ -305,11 +313,11 @@ const BookCreator = () => {
                   {i + 1}
                 </div>
                 <span
-                  className={`text-sm font-medium capitalize ${
+                  className={`text-sm font-medium ${
                     step === s ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
-                  {s === "plan" ? "Content Plan" : s === "review" ? "Review Variations" : "Confirmed"}
+                  {stepLabels[s]}
                 </span>
                 {i < 2 && (
                   <div className="w-8 md:w-16 h-px bg-border mx-2" />
@@ -343,7 +351,7 @@ const BookCreator = () => {
                   onClick={() => setStep("plan")}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Edit Content Plan
+                  {t.booking.editPlan}
                 </Button>
 
                 <BookingSummary
@@ -362,17 +370,17 @@ const BookCreator = () => {
                 <CheckCircle className="w-10 h-10 text-primary" />
               </div>
               <h2 className="text-3xl font-display font-bold text-foreground mb-4">
-                Booking Confirmed!
+                {t.booking.confirmed.title}
               </h2>
               <p className="text-muted-foreground max-w-md mx-auto mb-8">
-                Your content plan has been submitted to {creator.name}. You'll receive a confirmation email shortly with next steps.
+                {t.booking.confirmed.description.replace("{creatorName}", creator.name)}
               </p>
               <div className="flex gap-4 justify-center">
                 <Button variant="outline" asChild>
-                  <Link to="/browse">Browse More Creators</Link>
+                  <Link to="/browse">{t.booking.confirmed.browseMore}</Link>
                 </Button>
                 <Button asChild>
-                  <Link to="/">Back to Home</Link>
+                  <Link to="/">{t.booking.confirmed.backHome}</Link>
                 </Button>
               </div>
             </div>

@@ -1,9 +1,12 @@
 import { Sparkles } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const Navbar = () => {
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const { t } = useLanguage();
 
   const scrollToSection = (id: string) => {
     if (!isHome) return;
@@ -25,28 +28,31 @@ const Navbar = () => {
             to="/browse"
             className="hover:text-foreground transition-colors"
           >
-            Browse Creators
+            {t.nav.browseCreators}
           </Link>
           {isHome ? (
             <button
               onClick={() => scrollToSection("how-it-works")}
               className="hover:text-foreground transition-colors"
             >
-              How It Works
+              {t.nav.howItWorks}
             </button>
           ) : (
             <Link to="/#how-it-works" className="hover:text-foreground transition-colors">
-              How It Works
+              {t.nav.howItWorks}
             </Link>
           )}
         </div>
 
-        <Link
-          to="/get-started"
-          className="px-5 py-2 rounded-full bg-gradient-gold text-primary-foreground font-body text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          Get Started
-        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link
+            to="/get-started"
+            className="px-5 py-2 rounded-full bg-gradient-gold text-primary-foreground font-body text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            {t.nav.getStarted}
+          </Link>
+        </div>
       </div>
     </nav>
   );

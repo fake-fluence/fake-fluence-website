@@ -4,25 +4,37 @@ import InfluencerCard from "./InfluencerCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const BrowseSection = () => {
   const [activeCategory, setActiveCategory] = useState<Category>("all");
+  const { t } = useLanguage();
 
   const filtered =
     activeCategory === "all"
       ? influencers.slice(0, 4)
       : influencers.filter((i) => i.category === activeCategory).slice(0, 4);
 
+  const getCategoryLabel = (id: Category): string => {
+    const labels: Record<Category, string> = {
+      all: t.browse.categories.all,
+      women: t.browse.categories.women,
+      men: t.browse.categories.men,
+      pets: t.browse.categories.pets,
+      other: t.browse.categories.other,
+    };
+    return labels[id];
+  };
+
   return (
     <section id="browse" className="py-24 bg-gradient-dark">
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Meet Our <span className="text-gradient-gold">Creators</span>
+            {t.browse.title} <span className="text-gradient-gold">{t.browse.titleHighlight}</span>
           </h2>
           <p className="text-muted-foreground font-body text-lg max-w-xl mx-auto">
-            AI-generated personas with real engagement metrics. Pick one that
-            fits your brand.
+            {t.browse.description}
           </p>
         </div>
 
@@ -39,7 +51,7 @@ const BrowseSection = () => {
               }`}
             >
               <span className="mr-2">{cat.emoji}</span>
-              {cat.label}
+              {getCategoryLabel(cat.id)}
             </button>
           ))}
         </div>
@@ -58,7 +70,7 @@ const BrowseSection = () => {
               size="lg"
               className="bg-gradient-gold text-primary-foreground font-body font-semibold text-base px-8 py-6 shadow-gold hover:opacity-90 transition-opacity"
             >
-              View All Creators
+              {t.browse.viewAll}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>

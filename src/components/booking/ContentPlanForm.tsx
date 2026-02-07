@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export interface ContentPlanEntry {
   id: string;
@@ -26,15 +27,8 @@ interface ContentPlanFormProps {
   isGenerating: boolean;
 }
 
-const postTypeOptions = [
-  "Announce a new product",
-  "Promote an upcoming hackathon",
-  "Announce a partnership",
-  "Promote a venture track or demo day",
-  "Custom",
-];
-
 const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
+  const { t } = useLanguage();
   const [entries, setEntries] = useState<ContentPlanEntry[]>([
     {
       id: crypto.randomUUID(),
@@ -44,6 +38,14 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
       designElements: "",
     },
   ]);
+
+  const postTypeOptions = [
+    { key: "announceProduct", value: t.booking.contentPlan.postTypes.announceProduct },
+    { key: "promoteHackathon", value: t.booking.contentPlan.postTypes.promoteHackathon },
+    { key: "announcePartnership", value: t.booking.contentPlan.postTypes.announcePartnership },
+    { key: "promoteDemoDay", value: t.booking.contentPlan.postTypes.promoteDemoDay },
+    { key: "custom", value: t.booking.contentPlan.postTypes.custom },
+  ];
 
   const addEntry = () => {
     setEntries((prev) => [
@@ -79,21 +81,22 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
   };
 
   const isValid = entries.some((e) => e.postType.trim() !== "");
+  const postTypeValues = postTypeOptions.map((o) => o.value);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-display font-semibold text-foreground">
-            Content Plan
+            {t.booking.contentPlan.title}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Define the posts you want the creator to make. We'll generate variations for each.
+            {t.booking.contentPlan.description}
           </p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={addEntry}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Post
+          {t.booking.contentPlan.addPost}
         </Button>
       </div>
 
@@ -103,7 +106,7 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-medium">
-                  Post {index + 1}
+                  {t.booking.contentPlan.post} {index + 1}
                 </CardTitle>
                 {entries.length > 1 && (
                   <Button
@@ -121,11 +124,11 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor={`postType-${entry.id}`}>Post Type / Intent *</Label>
+                  <Label htmlFor={`postType-${entry.id}`}>{t.booking.contentPlan.postType} *</Label>
                   <Select
-                    value={postTypeOptions.includes(entry.postType) ? entry.postType : "Custom"}
+                    value={postTypeValues.includes(entry.postType) ? entry.postType : t.booking.contentPlan.postTypes.custom}
                     onValueChange={(value) => {
-                      if (value === "Custom") {
+                      if (value === t.booking.contentPlan.postTypes.custom) {
                         updateEntry(entry.id, "postType", "");
                       } else {
                         updateEntry(entry.id, "postType", value);
@@ -133,20 +136,20 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select post type" />
+                      <SelectValue placeholder={t.booking.contentPlan.postType} />
                     </SelectTrigger>
                     <SelectContent>
                       {postTypeOptions.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
+                        <SelectItem key={type.key} value={type.value}>
+                          {type.value}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {(!postTypeOptions.includes(entry.postType) || entry.postType === "") && (
+                  {(!postTypeValues.includes(entry.postType) || entry.postType === "") && (
                     <Input
                       id={`postType-${entry.id}`}
-                      placeholder="Enter custom post type..."
+                      placeholder={t.booking.contentPlan.postTypes.custom + "..."}
                       value={entry.postType}
                       onChange={(e) => updateEntry(entry.id, "postType", e.target.value)}
                       className="mt-2"
@@ -155,7 +158,7 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`platform-${entry.id}`}>Platform</Label>
+                  <Label htmlFor={`platform-${entry.id}`}>{t.booking.contentPlan.platform}</Label>
                   <Select
                     value={entry.platform}
                     onValueChange={(value) =>
@@ -166,9 +169,9 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                      <SelectItem value="Instagram">Instagram</SelectItem>
-                      <SelectItem value="Both">Both Platforms</SelectItem>
+                      <SelectItem value="LinkedIn">{t.booking.contentPlan.platforms.linkedin}</SelectItem>
+                      <SelectItem value="Instagram">{t.booking.contentPlan.platforms.instagram}</SelectItem>
+                      <SelectItem value="Both">{t.booking.contentPlan.platforms.both}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -176,14 +179,14 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor={`constraints-${entry.id}`}>
-                  Constraints{" "}
+                  {t.booking.contentPlan.constraints}{" "}
                   <span className="text-muted-foreground font-normal">
-                    (date, tone, CTA - optional)
+                    {t.booking.contentPlan.constraintsHint}
                   </span>
                 </Label>
                 <Input
                   id={`constraints-${entry.id}`}
-                  placeholder="e.g., Launch date: March 15, Professional tone, CTA: Sign up now"
+                  placeholder={t.booking.contentPlan.constraintsPlaceholder}
                   value={entry.constraints}
                   onChange={(e) => updateEntry(entry.id, "constraints", e.target.value)}
                 />
@@ -191,12 +194,12 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor={`designElements-${entry.id}`}>
-                  Design Elements / Content Details{" "}
-                  <span className="text-muted-foreground font-normal">(optional)</span>
+                  {t.booking.contentPlan.designElements}{" "}
+                  <span className="text-muted-foreground font-normal">{t.booking.contentPlan.designElementsHint}</span>
                 </Label>
                 <Textarea
                   id={`designElements-${entry.id}`}
-                  placeholder="e.g., Speaker names, prize announcements, specific images to include, brand colors..."
+                  placeholder={t.booking.contentPlan.designElementsPlaceholder}
                   value={entry.designElements}
                   onChange={(e) => updateEntry(entry.id, "designElements", e.target.value)}
                   rows={3}
@@ -212,12 +215,12 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Generating Variations...
+              {t.booking.contentPlan.generating}
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4 mr-2" />
-              Generate Post Variations
+              {t.booking.contentPlan.generate}
             </>
           )}
         </Button>

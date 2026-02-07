@@ -12,22 +12,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type SortOption = "popular" | "price-low" | "price-high" | "engagement" | "conversion";
 
-const sortLabels: Record<SortOption, string> = {
-  popular: "Most Popular",
-  "price-low": "Price: Low to High",
-  "price-high": "Price: High to Low",
-  engagement: "Highest Engagement",
-  conversion: "Best Conversion",
-};
-
 const Browse = () => {
+  const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState<Category>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedNiche, setSelectedNiche] = useState("All Niches");
+  const [selectedNiche, setSelectedNiche] = useState(t.browsePage.filters.allNiches);
   const [sortBy, setSortBy] = useState<SortOption>("popular");
+
+  const sortLabels: Record<SortOption, string> = {
+    popular: t.browsePage.filters.followers,
+    "price-low": `${t.browsePage.filters.price}: Low`,
+    "price-high": `${t.browsePage.filters.price}: High`,
+    engagement: t.browsePage.filters.engagement,
+    conversion: t.influencer.conversionRate,
+  };
+
+  const getCategoryLabel = (id: Category): string => {
+    const labels: Record<Category, string> = {
+      all: t.browse.categories.all,
+      women: t.browse.categories.women,
+      men: t.browse.categories.men,
+      pets: t.browse.categories.pets,
+      other: t.browse.categories.other,
+    };
+    return labels[id];
+  };
 
   const filtered = useMemo(() => {
     let result = influencers;
@@ -38,7 +51,7 @@ const Browse = () => {
     }
 
     // Niche filter
-    if (selectedNiche !== "All Niches") {
+    if (selectedNiche !== t.browsePage.filters.allNiches && selectedNiche !== "All Niches") {
       result = result.filter((i) => i.niche === selectedNiche);
     }
 
@@ -77,7 +90,7 @@ const Browse = () => {
     }
 
     return result;
-  }, [activeCategory, searchQuery, selectedNiche, sortBy]);
+  }, [activeCategory, searchQuery, selectedNiche, sortBy, t.browsePage.filters.allNiches]);
 
   return (
     <main className="min-h-screen bg-background">
@@ -87,11 +100,10 @@ const Browse = () => {
       <section className="pt-24 pb-8 bg-gradient-dark">
         <div className="container mx-auto px-6">
           <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">
-            Browse <span className="text-gradient-gold">Creators</span>
+            {t.browsePage.title} <span className="text-gradient-gold">{t.browsePage.titleHighlight}</span>
           </h1>
           <p className="text-muted-foreground font-body text-lg max-w-2xl">
-            Explore all AI creators, filter by category and niche, and compare
-            pricing for posts, captions, and video content.
+            {t.browsePage.description}
           </p>
         </div>
       </section>
@@ -112,7 +124,7 @@ const Browse = () => {
                 }`}
               >
                 <span className="mr-2">{cat.emoji}</span>
-                {cat.label}
+                {getCategoryLabel(cat.id)}
               </button>
             ))}
           </div>
@@ -122,7 +134,7 @@ const Browse = () => {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search creators..."
+                placeholder={t.browsePage.filters.search}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-surface border-border font-body text-sm"
@@ -136,7 +148,10 @@ const Browse = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {niches.map((niche) => (
+                  <SelectItem value={t.browsePage.filters.allNiches}>
+                    {t.browsePage.filters.allNiches}
+                  </SelectItem>
+                  {niches.filter(n => n !== "All Niches").map((niche) => (
                     <SelectItem key={niche} value={niche}>
                       {niche}
                     </SelectItem>
@@ -167,7 +182,7 @@ const Browse = () => {
       <section className="py-12 bg-gradient-dark">
         <div className="container mx-auto px-6">
           <p className="text-sm text-muted-foreground font-body mb-6">
-            {filtered.length} creator{filtered.length !== 1 ? "s" : ""} found
+            {filtered.length} {filtered.length !== 1 ? t.browse.categories.all.toLowerCase().split(" ")[0] + "s" : t.browse.categories.all.toLowerCase().split(" ")[0]}
           </p>
 
           {filtered.length > 0 ? (
@@ -184,7 +199,7 @@ const Browse = () => {
           ) : (
             <div className="text-center py-20">
               <p className="text-muted-foreground font-body text-lg">
-                No creators match your filters. Try adjusting your search.
+                {t.browsePage.noResults}
               </p>
             </div>
           )}
