@@ -2,7 +2,7 @@ import { type Influencer, contentTypeLabels, type ContentType } from "@/data/inf
 import { BadgeCheck, Users, Eye, ShoppingCart, Heart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 interface MatchResultCardProps {
   influencer: Influencer;
   matchScore: number;
@@ -12,6 +12,7 @@ interface MatchResultCardProps {
 }
 
 const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect }: MatchResultCardProps) => {
+  const navigate = useNavigate();
   const [selectedType, setSelectedType] = useState<ContentType>("post");
 
   const getScoreColor = (score: number) => {
@@ -108,11 +109,11 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
         </div>
 
         <Button
-          onClick={() => onSelect(influencer, selectedType)}
+          onClick={() => navigate(`/book/${influencer.id}`)}
           className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity"
           size="sm"
         >
-          Generate Content — ${influencer.pricing[selectedType]}
+          Book Now — ${influencer.pricing[selectedType]}
         </Button>
       </div>
     </div>
