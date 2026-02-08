@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import InstagramConnectDialog from "@/components/booking/InstagramConnectDialog";
 
 type BookingStep = "plan" | "review" | "confirmed";
 
@@ -429,7 +430,7 @@ const BookCreator = () => {
                 alt={creator.name}
                 className="w-16 h-16 rounded-full object-cover border-2 border-primary/20"
               />
-              <div>
+              <div className="flex-1">
                 <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
                   {t.booking.book} {creator.name}
                 </h1>
@@ -437,6 +438,10 @@ const BookCreator = () => {
                   {creator.handle} • {creator.niche}
                 </p>
               </div>
+              <InstagramConnectDialog
+                influencerId={creator.id}
+                influencerName={creator.name}
+              />
             </div>
           </div>
 
@@ -501,6 +506,7 @@ const BookCreator = () => {
                     isGeneratingImage={loadingStates[post.id]?.isGeneratingImage || false}
                     isEditingImage={loadingStates[post.id]?.isEditingImage || false}
                     isGeneratingVideo={loadingStates[post.id]?.isGeneratingVideo || false}
+                    influencerId={creator.id}
                     onGenerateImage={(prompt) => handleGenerateImage(post.id, prompt)}
                     onEditImage={(prompt) => handleEditImage(post.id, prompt)}
                     onGenerateVideo={(prompt) => handleGenerateVideo(post.id, prompt)}
