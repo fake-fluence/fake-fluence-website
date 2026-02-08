@@ -4,19 +4,26 @@ import { influencers, type Influencer } from "@/data/influencers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContentPlanForm, { type ContentPlanEntry } from "@/components/booking/ContentPlanForm";
-import GeneratedVariations from "@/components/booking/GeneratedVariations";
+import GeneratedContentCard from "@/components/booking/GeneratedContentCard";
 import BookingSummary from "@/components/booking/BookingSummary";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
 
 type BookingStep = "plan" | "review" | "confirmed";
 
 export interface GeneratedPost {
   id: string;
   planEntry: ContentPlanEntry;
-  variations: PostVariation[];
-  selectedVariation: number | null;
+  imageBase64: string | null;
+  videoBase64: string | null;
+  videoJobId: string | null;
+  videoStatus: "idle" | "generating" | "completed" | "failed";
+  caption: string;
+  prompt: string;
+  selectedVariation: number | null; // Keep for compatibility with BookingSummary
+  variations: PostVariation[]; // Keep for compatibility
 }
 
 export interface PostVariation {
@@ -31,12 +38,17 @@ const BookCreator = () => {
   const { creatorId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [creator, setCreator] = useState<Influencer | null>(null);
   const [step, setStep] = useState<BookingStep>("plan");
   const [contentPlan, setContentPlan] = useState<ContentPlanEntry[]>([]);
   const [generatedPosts, setGeneratedPosts] = useState<GeneratedPost[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState<Record<string, boolean>>({});
+  const [loadingStates, setLoadingStates] = useState<Record<string, {
+    isGeneratingImage: boolean;
+    isEditingImage: boolean;
+    isGeneratingVideo: boolean;
+  }>>({});
 
   useEffect(() => {
     const found = influencers.find((i) => i.id === creatorId);
@@ -47,203 +59,260 @@ const BookCreator = () => {
     setCreator(found);
   }, [creatorId, navigate]);
 
-  const generateMockVariations = (
-    entry: ContentPlanEntry,
-    feedback?: string
-  ): PostVariation[] => {
-    const tones = ["Professional", "Casual & Friendly", "Bold & Exciting"];
-    
-    // If feedback is provided, adjust the variations based on it
-    const feedbackLower = (feedback || "").toLowerCase();
-    const isMoreProfessional = feedbackLower.includes("professional") || feedbackLower.includes("formal");
-    const isMoreCasual = feedbackLower.includes("casual") || feedbackLower.includes("friendly");
-    const isMoreBold = feedbackLower.includes("bold") || feedbackLower.includes("exciting") || feedbackLower.includes("energetic");
-    const wantStrongerCTA = feedbackLower.includes("cta") || feedbackLower.includes("call to action");
-    const wantLessEmojis = feedbackLower.includes("less emoji") || feedbackLower.includes("no emoji");
-    const wantMoreEmojis = feedbackLower.includes("more emoji");
-
-    const baseTexts = {
-      "Announce a new product": [
-        isMoreProfessional
-          ? "We are pleased to announce our latest innovation. This product represents a significant advancement in our commitment to excellence."
-          : "Introducing something game-changing! 🚀 Get ready to experience innovation like never before.",
-        isMoreCasual
-          ? "Hey everyone! We've got some exciting news to share - something we've been working on just for you! 💫"
-          : "Big news dropping! We've been working on something special and can't wait to share it with you 💫",
-        isMoreBold
-          ? "🔥🔥🔥 STOP EVERYTHING! This is THE announcement you've been waiting for! Game. Changed. Forever! 🔥🔥🔥"
-          : "🔥 NEW ARRIVAL ALERT 🔥 This is going to change everything. Stay tuned!",
-      ],
-      "Promote an upcoming hackathon": [
-        isMoreProfessional
-          ? "Join industry leaders and innovators at our upcoming hackathon. An opportunity to demonstrate your expertise and build meaningful connections."
-          : "Calling all innovators! Join us for an incredible hackathon experience. Build, learn, connect.",
-        isMoreCasual
-          ? "Who's ready to code and have fun? 💻 Our hackathon is coming up and it's going to be amazing! Bring your ideas and let's create something awesome together ✨"
-          : "Ready to code, create, and compete? Our hackathon is coming up and you don't want to miss it! 💻✨",
-        isMoreBold
-          ? "🏆🔥 THE ULTIMATE CODING SHOWDOWN IS HERE! 48 hours. No limits. PURE INNOVATION. Are you brave enough to compete?! 🔥🏆"
-          : "🏆 48 hours. Endless possibilities. Register now for the hackathon of the year!",
-      ],
-      "Announce a partnership": [
-        isMoreProfessional
-          ? "We are delighted to announce a strategic partnership that will enhance our capabilities and deliver greater value to our stakeholders."
-          : "Excited to announce our partnership with an amazing team. Together, we're building something extraordinary.",
-        isMoreCasual
-          ? "Guess what?! We just teamed up with some incredible people! 🤝 This is going to be so good, you won't believe it 💫"
-          : "Two forces, one vision! 🤝 Thrilled to partner up and bring you incredible value.",
-        isMoreBold
-          ? "🎉💥 MASSIVE PARTNERSHIP ALERT! 💥🎉 Two powerhouses uniting to absolutely DOMINATE! This is LEGENDARY!"
-          : "PARTNERSHIP ANNOUNCEMENT! 🎉 This collaboration is going to be legendary.",
-      ],
-      "Promote a venture track or demo day": [
-        isMoreProfessional
-          ? "We cordially invite you to Demo Day, where visionary founders present innovative solutions to distinguished investors and industry leaders."
-          : "Join us for Demo Day where innovation meets opportunity. See the future being built today.",
-        isMoreCasual
-          ? "Demo Day is almost here! ✨ Come watch some amazing founders share their incredible ideas. Trust us, you'll leave inspired! 🚀"
-          : "Startup magic incoming! ✨ Don't miss our Demo Day featuring incredible founders and groundbreaking ideas.",
-        isMoreBold
-          ? "🚀🦄 DEMO DAY IS HERE AND IT'S GOING TO BE EPIC! 🦄🚀 Watch the FUTURE unfold before your eyes! These founders are UNSTOPPABLE!"
-          : "🚀 DEMO DAY IS HERE! Watch the next unicorns pitch live. This is where legends begin!",
-      ],
-    };
-
-    const getCaptions = () => {
-      const key = entry.postType as keyof typeof baseTexts;
-      let captions = baseTexts[key] || [
-        `Exciting update about ${entry.postType}! Stay tuned for more details.`,
-        `Big things happening! ${entry.postType} - you won't want to miss this.`,
-        `🔥 ${entry.postType} - Let's make it happen!`,
-      ];
-
-      // Apply emoji modifications
-      if (wantLessEmojis) {
-        captions = captions.map((c) => c.replace(/[\u{1F300}-\u{1F9FF}]/gu, "").trim());
-      }
-      if (wantMoreEmojis) {
-        captions = captions.map((c) => c + " 🎉✨🚀💫");
-      }
-
-      // Add stronger CTA if requested
-      if (wantStrongerCTA) {
-        captions = captions.map((c) => c + "\n\n👉 Don't wait - ACT NOW! Limited spots available. Link in bio!");
-      }
-
-      return captions;
-    };
-
-    const captions = getCaptions();
-    const imageDescriptions = [
-      `Clean, minimalist design with brand colors. ${entry.platform === "LinkedIn" ? "Professional layout with subtle gradients." : "Vibrant, eye-catching visuals optimized for mobile."}${feedback ? ` Adjusted based on: "${feedback}"` : ""}`,
-      `Dynamic composition featuring ${entry.designElements || "modern graphics"}. ${entry.platform === "Instagram" ? "Square format with bold typography." : "Wide format suitable for professional feeds."}${feedback ? ` Incorporating feedback: "${feedback}"` : ""}`,
-      `High-impact visual with ${entry.designElements || "brand elements"}. Text overlay positioned for maximum readability on ${entry.platform}.${feedback ? ` Refined with: "${feedback}"` : ""}`,
-    ];
-
-    const overlays = [
-      entry.postType.toUpperCase(),
-      `${entry.postType} | ${entry.constraints || "Coming Soon"}`,
-      `🚀 ${entry.postType}`,
-    ];
-
-    return tones.map((tone, i) => ({
-      id: `var-${entry.id}-${i}-${Date.now()}`,
-      caption: captions[i] + (entry.constraints ? `\n\n${entry.constraints}` : ""),
-      imageDescription: imageDescriptions[i],
-      textOverlay: overlays[i],
-      tone,
-    }));
-  };
-
   const handlePlanSubmit = async (entries: ContentPlanEntry[]) => {
     setContentPlan(entries);
     setIsGenerating(true);
 
-    // Simulate AI generation delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const generated: GeneratedPost[] = entries.map((entry) => ({
+    // Initialize posts without images - user will generate them
+    const posts: GeneratedPost[] = entries.map((entry) => ({
       id: `post-${entry.id}`,
       planEntry: entry,
-      variations: generateMockVariations(entry),
-      selectedVariation: null,
+      imageBase64: null,
+      videoBase64: null,
+      videoJobId: null,
+      videoStatus: "idle" as const,
+      caption: "",
+      prompt: "",
+      selectedVariation: 0, // Auto-select for compatibility
+      variations: [{
+        id: `var-${entry.id}`,
+        caption: "",
+        imageDescription: "",
+        textOverlay: entry.postType,
+        tone: "AI Generated",
+      }],
     }));
 
-    setGeneratedPosts(generated);
+    // Initialize loading states
+    const states: Record<string, { isGeneratingImage: boolean; isEditingImage: boolean; isGeneratingVideo: boolean }> = {};
+    posts.forEach((p) => {
+      states[p.id] = { isGeneratingImage: false, isEditingImage: false, isGeneratingVideo: false };
+    });
+    setLoadingStates(states);
+
+    setGeneratedPosts(posts);
     setIsGenerating(false);
     setStep("review");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleVariationSelect = (postId: string, variationIndex: number) => {
+  const callGenerateContent = async (action: string, body: Record<string, unknown>) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-content?action=${action}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Failed to ${action}`);
+    }
+
+    return response.json();
+  };
+
+  const handleGenerateImage = async (postId: string, prompt: string) => {
+    setLoadingStates((prev) => ({
+      ...prev,
+      [postId]: { ...prev[postId], isGeneratingImage: true },
+    }));
+
+    try {
+      const result = await callGenerateContent("generate-image", {
+        prompt,
+        size: "1024x1024",
+        quality: "high",
+      });
+
+      setGeneratedPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                imageBase64: result.imageBase64,
+                prompt,
+                caption: `✨ ${post.planEntry.postType}\n\n${post.planEntry.constraints || ""}`.trim(),
+                variations: [{
+                  ...post.variations[0],
+                  caption: `✨ ${post.planEntry.postType}`,
+                  imageDescription: prompt,
+                }],
+              }
+            : post
+        )
+      );
+
+      toast({
+        title: "Image generated!",
+        description: "Your AI image is ready. You can edit it or upgrade to video.",
+      });
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        title: "Generation failed",
+        description: error instanceof Error ? error.message : "Failed to generate image",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingStates((prev) => ({
+        ...prev,
+        [postId]: { ...prev[postId], isGeneratingImage: false },
+      }));
+    }
+  };
+
+  const handleEditImage = async (postId: string, editPrompt: string) => {
+    const post = generatedPosts.find((p) => p.id === postId);
+    if (!post?.imageBase64) return;
+
+    setLoadingStates((prev) => ({
+      ...prev,
+      [postId]: { ...prev[postId], isEditingImage: true },
+    }));
+
+    try {
+      const result = await callGenerateContent("edit-image", {
+        prompt: editPrompt,
+        imageBase64: post.imageBase64,
+      });
+
+      setGeneratedPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, imageBase64: result.imageBase64, prompt: editPrompt }
+            : p
+        )
+      );
+
+      toast({
+        title: "Image updated!",
+        description: "Your edit has been applied.",
+      });
+    } catch (error) {
+      console.error("Error editing image:", error);
+      toast({
+        title: "Edit failed",
+        description: error instanceof Error ? error.message : "Failed to edit image",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingStates((prev) => ({
+        ...prev,
+        [postId]: { ...prev[postId], isEditingImage: false },
+      }));
+    }
+  };
+
+  const handleGenerateVideo = async (postId: string, prompt: string) => {
+    const post = generatedPosts.find((p) => p.id === postId);
+
+    setLoadingStates((prev) => ({
+      ...prev,
+      [postId]: { ...prev[postId], isGeneratingVideo: true },
+    }));
+
     setGeneratedPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId ? { ...post, selectedVariation: variationIndex } : post
+      prev.map((p) =>
+        p.id === postId ? { ...p, videoStatus: "generating" as const } : p
       )
     );
+
+    try {
+      const result = await callGenerateContent("generate-video", {
+        prompt,
+        imageBase64: post?.imageBase64,
+        seconds: "5",
+      });
+
+      setGeneratedPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, videoJobId: result.jobId, videoStatus: "generating" as const }
+            : p
+        )
+      );
+
+      toast({
+        title: "Video generation started!",
+        description: "This may take a few minutes. We'll check the status automatically.",
+      });
+    } catch (error) {
+      console.error("Error generating video:", error);
+      setGeneratedPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, videoStatus: "failed" as const } : p
+        )
+      );
+      toast({
+        title: "Video generation failed",
+        description: error instanceof Error ? error.message : "Failed to generate video",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingStates((prev) => ({
+        ...prev,
+        [postId]: { ...prev[postId], isGeneratingVideo: false },
+      }));
+    }
   };
 
-  const handleUpdateCaption = (
-    postId: string,
-    variationIndex: number,
-    newCaption: string
-  ) => {
-    setGeneratedPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        const newVariations = [...post.variations];
-        newVariations[variationIndex] = {
-          ...newVariations[variationIndex],
-          caption: newCaption,
-        };
-        return { ...post, variations: newVariations };
-      })
-    );
+  const handleCheckVideoStatus = async (postId: string) => {
+    const post = generatedPosts.find((p) => p.id === postId);
+    if (!post?.videoJobId) return;
+
+    try {
+      const statusResult = await callGenerateContent("video-status", {
+        jobId: post.videoJobId,
+      });
+
+      if (statusResult.status === "completed") {
+        // Download the video
+        const downloadResult = await callGenerateContent("download-video", {
+          jobId: post.videoJobId,
+        });
+
+        setGeneratedPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, videoBase64: downloadResult.videoBase64, videoStatus: "completed" as const }
+              : p
+          )
+        );
+
+        toast({
+          title: "Video ready!",
+          description: "Your video has been generated successfully.",
+        });
+      } else if (statusResult.status === "failed") {
+        setGeneratedPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId ? { ...p, videoStatus: "failed" as const } : p
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error checking video status:", error);
+    }
   };
 
-  const handleRegenerateVariation = async (
-    postId: string,
-    variationIndex: number,
-    feedback: string
-  ) => {
-    const key = `${postId}-${variationIndex}`;
-    setIsRegenerating((prev) => ({ ...prev, [key]: true }));
-
-    // Simulate regeneration delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
+  const handleUpdateCaption = (postId: string, caption: string) => {
     setGeneratedPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        const newVariations = [...post.variations];
-        const entry = post.planEntry;
-        const singleVariation = generateMockVariations(entry, feedback)[variationIndex];
-        newVariations[variationIndex] = singleVariation;
-        return { ...post, variations: newVariations };
-      })
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              caption,
+              variations: [{ ...post.variations[0], caption }],
+            }
+          : post
+      )
     );
-
-    setIsRegenerating((prev) => ({ ...prev, [key]: false }));
-  };
-
-  const handleRegenerateAll = async (postId: string, feedback: string) => {
-    setIsRegenerating((prev) => ({ ...prev, [postId]: true }));
-
-    // Simulate regeneration delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    setGeneratedPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        return {
-          ...post,
-          variations: generateMockVariations(post.planEntry, feedback),
-          selectedVariation: null,
-        };
-      })
-    );
-
-    setIsRegenerating((prev) => ({ ...prev, [postId]: false }));
   };
 
   const handleConfirmBooking = () => {
@@ -251,9 +320,8 @@ const BookCreator = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const allVariationsSelected = generatedPosts.every(
-    (post) => post.selectedVariation !== null
-  );
+  // Check if all posts have images
+  const allPostsHaveContent = generatedPosts.every((post) => post.imageBase64);
 
   if (!creator) return null;
 
@@ -336,14 +404,36 @@ const BookCreator = () => {
 
           {step === "review" && (
             <div className="space-y-8">
-              <GeneratedVariations
-                posts={generatedPosts}
-                onSelectVariation={handleVariationSelect}
-                onUpdateCaption={handleUpdateCaption}
-                onRegenerateVariation={handleRegenerateVariation}
-                onRegenerateAll={handleRegenerateAll}
-                isRegenerating={isRegenerating}
-              />
+              <div>
+                <h2 className="text-xl font-display font-semibold text-foreground">
+                  Generate Your Content
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Generate an AI image for each post. Edit it until you're happy, then optionally upgrade to video.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {generatedPosts.map((post, index) => (
+                  <GeneratedContentCard
+                    key={post.id}
+                    entry={post.planEntry}
+                    index={index}
+                    imageBase64={post.imageBase64}
+                    videoBase64={post.videoBase64}
+                    videoStatus={post.videoStatus}
+                    caption={post.caption}
+                    isGeneratingImage={loadingStates[post.id]?.isGeneratingImage || false}
+                    isEditingImage={loadingStates[post.id]?.isEditingImage || false}
+                    isGeneratingVideo={loadingStates[post.id]?.isGeneratingVideo || false}
+                    onGenerateImage={(prompt) => handleGenerateImage(post.id, prompt)}
+                    onEditImage={(prompt) => handleEditImage(post.id, prompt)}
+                    onGenerateVideo={(prompt) => handleGenerateVideo(post.id, prompt)}
+                    onUpdateCaption={(caption) => handleUpdateCaption(post.id, caption)}
+                    onCheckVideoStatus={() => handleCheckVideoStatus(post.id)}
+                  />
+                ))}
+              </div>
 
               <div className="flex flex-col md:flex-row gap-4 justify-between items-center pt-6 border-t">
                 <Button
@@ -358,7 +448,7 @@ const BookCreator = () => {
                   creator={creator}
                   posts={generatedPosts}
                   onConfirm={handleConfirmBooking}
-                  disabled={!allVariationsSelected}
+                  disabled={!allPostsHaveContent}
                 />
               </div>
             </div>
