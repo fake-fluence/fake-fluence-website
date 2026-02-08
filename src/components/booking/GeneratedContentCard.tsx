@@ -105,7 +105,8 @@ const GeneratedContentCard = ({
   };
 
   const handleGenerateVideo = () => {
-    const prompt = videoPrompt.trim() || "gentle camera push-in";
+    // Let users send a truly-empty prompt; backend will substitute the smallest safe placeholder.
+    const prompt = videoPrompt.trim();
     onGenerateVideo(prompt);
     setVideoPrompt("");
     setShowVideoPrompt(false);
