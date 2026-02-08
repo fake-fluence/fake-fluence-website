@@ -126,7 +126,7 @@ export const fr: TranslationKeys = {
       platforms: {
         linkedin: "LinkedIn",
         instagram: "Instagram",
-        both: "Les deux plateformes",
+        tiktok: "TikTok",
       },
     },
     variations: {
