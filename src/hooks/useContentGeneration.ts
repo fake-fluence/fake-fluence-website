@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { prepareSoraInputReference } from "@/lib/image/prepareSoraInputReference";
 
 interface GeneratedContent {
   imageBase64: string | null;
@@ -130,6 +131,10 @@ export function useContentGeneration(): UseContentGenerationReturn {
     setContent((prev) => ({ ...prev, videoStatus: "generating" }));
 
     try {
+      const soraImageBase64 = content.imageBase64
+        ? await prepareSoraInputReference(content.imageBase64, { width: 1280, height: 720 })
+        : null;
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-content?action=generate-video`,
         {
@@ -140,7 +145,7 @@ export function useContentGeneration(): UseContentGenerationReturn {
           },
           body: JSON.stringify({
             prompt,
-            imageBase64: content.imageBase64,
+            imageBase64: soraImageBase64,
             seconds: "4",
           }),
         }
