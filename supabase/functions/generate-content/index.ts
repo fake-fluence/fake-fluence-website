@@ -283,7 +283,7 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
     body: JSON.stringify({
       model: "sora-2",
       prompt: enrichedPrompt,
-      seconds: parseInt(seconds),
+      seconds,
       size: "1280x720",
     }),
   });
