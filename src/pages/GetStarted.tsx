@@ -9,6 +9,7 @@ import { ArrowLeft, Sparkles, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = "upload" | "results" | "preview";
 
@@ -24,99 +25,6 @@ interface MatchResult {
   matchScore: number;
   matchReason: string;
 }
-
-// Generate a custom match reason based on the influencer and product context
-const generateMatchReason = (
-  inf: Influencer,
-  productCategories: string[],
-  nicheMatch: boolean
-): string => {
-  const platformData = inf.platforms.instagram;
-  const engagement = parseFloat(platformData.engagement);
-  const conversion = parseFloat(platformData.conversionRate);
-  const parts: string[] = [];
-
-  if (nicheMatch) {
-    parts.push(
-      `${inf.name}'s ${inf.niche} niche directly aligns with your ${productCategories.join(" & ")} product`
-    );
-  } else {
-    parts.push(
-      `${inf.name}'s ${inf.niche} audience has crossover appeal for your product category`
-    );
-  }
-
-  if (engagement >= 6) {
-    parts.push(`Their exceptional ${platformData.engagement} engagement rate indicates a highly active and loyal community`);
-  } else if (engagement >= 4.5) {
-    parts.push(`A solid ${platformData.engagement} engagement rate shows consistent audience interaction`);
-  } else {
-    parts.push(`With ${platformData.followers} followers, they offer broad reach across diverse demographics`);
-  }
-
-  if (conversion >= 5) {
-    parts.push(`${platformData.conversionRate} conversion rate is well above average, driving strong purchase intent`);
-  } else if (conversion >= 3.5) {
-    parts.push(`${platformData.conversionRate} conversion rate means reliable ROI on sponsored content`);
-  }
-
-  if (platformData.avgViews) {
-    parts.push(`averaging ${platformData.avgViews} views per post`);
-  }
-
-  return parts.join(". ") + ".";
-};
-
-// Category → relevant niches mapping
-const categoryNicheMap: Record<string, string[]> = {
-  "Fashion & Apparel": ["Fashion & Lifestyle", "Fashion & Editorial"],
-  "Beauty & Skincare": ["Beauty & Travel", "Fashion & Lifestyle"],
-  "Health & Fitness": ["Fitness & Motivation", "Fitness & Wellness"],
-  "Food & Beverage": ["Travel & Lifestyle", "Fashion & Lifestyle"],
-  "Technology & Gadgets": ["Fashion & Editorial", "Fitness & Motivation"],
-  "Home & Living": ["Travel & Lifestyle", "Cat Content & Reviews"],
-  "Travel & Experiences": ["Beauty & Travel", "Travel & Lifestyle"],
-  "Pet Products": ["Pet Life & Products", "Cat Content & Reviews"],
-  Other: ["Fashion & Editorial", "Travel & Lifestyle"],
-};
-
-// Simulate AI matching with scores
-const getMatchResults = (product: ProductData): MatchResult[] => {
-  const allRelevantNiches = product.categories.flatMap(
-    (cat) => categoryNicheMap[cat] || []
-  );
-  const uniqueNiches = [...new Set(allRelevantNiches)];
-
-  return influencers
-    .map((inf) => {
-      let score = 50;
-      const nicheMatch = uniqueNiches.includes(inf.niche);
-
-      // Niche alignment bonus (biggest factor)
-      if (nicheMatch) score += 25;
-
-      // Engagement bonus
-      const engagement = parseFloat(inf.platforms.instagram.engagement);
-      score += Math.floor(engagement * 3);
-
-      // Conversion rate bonus
-      const convRate = parseFloat(inf.platforms.instagram.conversionRate);
-      score += Math.floor(convRate * 3);
-
-      // Verified bonus
-      if (inf.verified) score += 5;
-
-      // Small random factor for variety
-      score += Math.floor(Math.random() * 8);
-
-      const finalScore = Math.min(score, 99);
-      const matchReason = generateMatchReason(inf, product.categories, nicheMatch);
-
-      return { influencer: inf, matchScore: finalScore, matchReason };
-    })
-    .sort((a, b) => b.matchScore - a.matchScore);
-};
-
 const MIN_MATCH_SCORE = 65;
 
 const GetStarted = () => {
@@ -130,19 +38,72 @@ const GetStarted = () => {
   const [showModifySearch, setShowModifySearch] = useState(false);
   const { toast } = useToast();
 
-  const handleUpload = (data: ProductData) => {
+  const handleUpload = async (data: ProductData) => {
     setIsLoading(true);
     setProductData(data);
 
-    // Simulate AI processing
-    setTimeout(() => {
-      const matched = getMatchResults(data);
+    try {
+      // Prepare influencer summaries for the edge function
+      const influencerPayload = influencers.map((inf) => ({
+        id: inf.id,
+        name: inf.name,
+        handle: inf.handle,
+        niche: inf.niche,
+        verified: inf.verified,
+        location: inf.location,
+        bio: inf.bio,
+        followers: inf.platforms.instagram.followers,
+        engagement: inf.platforms.instagram.engagement,
+        conversionRate: inf.platforms.instagram.conversionRate,
+        avgViews: inf.platforms.instagram.avgViews,
+      }));
+
+      const { data: responseData, error } = await supabase.functions.invoke("match-personas", {
+        body: {
+          product: {
+            name: data.name,
+            description: data.description,
+            categories: data.categories,
+          },
+          influencers: influencerPayload,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message || "Failed to match personas");
+      }
+
+      const scores: { influencer_id: string; score: number; reason: string }[] =
+        responseData?.scores ?? [];
+
+      // Map AI scores back to full influencer objects
+      const matched: MatchResult[] = scores
+        .map((s) => {
+          const inf = influencers.find((i) => i.id === s.influencer_id);
+          if (!inf) return null;
+          return {
+            influencer: inf,
+            matchScore: Math.min(s.score, 99),
+            matchReason: s.reason,
+          };
+        })
+        .filter(Boolean) as MatchResult[];
+
       setResults(matched);
-      setIsLoading(false);
       setStep("results");
       setShowModifySearch(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 2000);
+    } catch (err) {
+      console.error("Matching error:", err);
+      toast({
+        title: "Matching failed",
+        description:
+          err instanceof Error ? err.message : "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSelectCreator = (influencer: Influencer, contentType: ContentType) => {
