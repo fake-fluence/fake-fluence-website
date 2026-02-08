@@ -335,7 +335,7 @@ async function getVideoStatus(apiKey: string, body: VideoStatusRequest): Promise
 async function downloadVideo(apiKey: string, body: VideoStatusRequest): Promise<Response> {
   const { jobId } = body;
 
-  // First get the status to get the output URL
+  // First check the status to confirm it's completed
   const statusResponse = await fetch(`https://api.openai.com/v1/videos/${jobId}`, {
     method: "GET",
     headers: {
@@ -356,23 +356,32 @@ async function downloadVideo(apiKey: string, body: VideoStatusRequest): Promise<
     );
   }
 
-  // Get the video URL from the output - Sora 2 returns output.url
-  const videoUrl = statusData.output?.url || statusData.url;
-  if (!videoUrl) {
-    console.error("Video data structure:", JSON.stringify(statusData));
-    throw new Error("No video URL in completed job");
-  }
+  // Download video bytes via the /content endpoint
+  console.log("Downloading video content for:", jobId);
+  const videoResponse = await fetch(`https://api.openai.com/v1/videos/${jobId}/content`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  });
 
-  console.log("Downloading video from:", videoUrl);
-
-  // Fetch the video and convert to base64
-  const videoResponse = await fetch(videoUrl);
   if (!videoResponse.ok) {
+    const errorText = await videoResponse.text();
+    console.error("Video download error:", videoResponse.status, errorText);
     throw new Error(`Failed to download video: ${videoResponse.status}`);
   }
 
   const videoArrayBuffer = await videoResponse.arrayBuffer();
-  const videoBase64 = btoa(String.fromCharCode(...new Uint8Array(videoArrayBuffer)));
+  // Convert to base64 in chunks to avoid stack overflow with large videos
+  const bytes = new Uint8Array(videoArrayBuffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  const videoBase64 = btoa(binary);
+
+  console.log("Video downloaded, size:", bytes.length, "bytes");
 
   return new Response(
     JSON.stringify({ videoBase64, status: "completed" }),
