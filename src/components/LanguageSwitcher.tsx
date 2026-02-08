@@ -13,7 +13,7 @@ import {
   languageFlags,
 } from "@/i18n/LanguageContext";
 
-const languages: Language[] = ["en", "de", "fr"];
+const languages: Language[] = ["en", "de", "fr", "es"];
 
 const LanguageSwitcher = () => {
   const { language, setLanguage } = useLanguage();
