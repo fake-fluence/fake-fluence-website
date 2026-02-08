@@ -6,10 +6,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface InfluencerContext {
+  name: string;
+  handle: string;
+  niche: string;
+  bio: string;
+  instagramUrl: string;
+}
+
+interface ProductContext {
+  name: string;
+  description: string;
+  categories: string[];
+}
+
 interface GenerateImageRequest {
   prompt: string;
   size?: string;
   quality?: string;
+  influencer?: InfluencerContext | null;
+  product?: ProductContext | null;
+  productImageBase64?: string | null;
+  productUrl?: string;
 }
 
 interface EditImageRequest {
@@ -81,8 +99,85 @@ serve(async (req) => {
 });
 
 async function generateImage(apiKey: string, body: GenerateImageRequest): Promise<Response> {
-  const { prompt, size = "1024x1024", quality = "high" } = body;
+  const { prompt, size = "1024x1024", quality = "high", influencer, product, productImageBase64, productUrl } = body;
 
+  // Build a rich prompt that makes the AI generate a realistic sponsored post
+  let enrichedPrompt = prompt;
+
+  if (influencer || product) {
+    const parts: string[] = [];
+    
+    parts.push("Create a realistic Instagram sponsored post photo.");
+    
+    if (influencer) {
+      parts.push(`The post is from ${influencer.name} (${influencer.handle}), a ${influencer.niche} influencer. ${influencer.bio}`);
+      parts.push(`Match the visual style you'd expect from ${influencer.instagramUrl} — authentic, personal, lifestyle-oriented.`);
+      parts.push("The person in the photo should look like a real influencer naturally showing off a product they love — NOT a studio ad.");
+    }
+    
+    if (product) {
+      parts.push(`The product being promoted is "${product.name}": ${product.description}. Categories: ${product.categories.join(", ")}.`);
+    }
+
+    if (productUrl) {
+      parts.push(`Product/company page: ${productUrl}`);
+    }
+
+    parts.push("The image should look like an organic sponsored post — the influencer casually using or holding the product in a natural setting. NOT a product-only photo, NOT a studio ad. Think: real person, real life, subtle product placement.");
+    
+    // Add original prompt context too
+    parts.push(`Additional context: ${prompt}`);
+    
+    enrichedPrompt = parts.join("\n\n");
+  }
+
+  console.log("Generating image with enriched prompt, product image included:", !!productImageBase64);
+
+  // If we have a product image, use the edit endpoint to incorporate it
+  if (productImageBase64) {
+    const imageBytes = Uint8Array.from(atob(productImageBase64), (c) => c.charCodeAt(0));
+    const imageBlob = new Blob([imageBytes], { type: "image/png" });
+
+    const formData = new FormData();
+    formData.append("model", "gpt-image-1");
+    formData.append("prompt", enrichedPrompt + "\n\nIMPORTANT: The attached image shows the exact product that must appear in the generated photo. The influencer should be holding or using THIS specific product.");
+    formData.append("image", imageBlob, "product.png");
+    formData.append("size", size);
+
+    const response = await fetch("https://api.openai.com/v1/images/edits", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenAI image edit error:", response.status, errorText);
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error?.code === "moderation_blocked") {
+          throw new Error("Your prompt was flagged by content moderation. Please try a different description.");
+        }
+        throw new Error(errorData.error?.message || `Image generation failed: ${response.status}`);
+      } catch (e) {
+        if (e instanceof Error && (e.message.includes("moderation") || e.message.includes("Image"))) throw e;
+        throw new Error(`Image generation failed: ${response.status}`);
+      }
+    }
+
+    const data = await response.json();
+    const imageBase64 = data.data?.[0]?.b64_json;
+    if (!imageBase64) throw new Error("No image data returned from OpenAI");
+
+    return new Response(
+      JSON.stringify({ imageBase64 }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // No product image — use standard generation
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
@@ -91,7 +186,7 @@ async function generateImage(apiKey: string, body: GenerateImageRequest): Promis
     },
     body: JSON.stringify({
       model: "gpt-image-1",
-      prompt,
+      prompt: enrichedPrompt,
       n: 1,
       size,
       quality,

@@ -20,6 +20,7 @@ export interface ContentPlanEntry {
   platform: "LinkedIn" | "Instagram" | "TikTok";
   constraints: string;
   designElements: string;
+  productUrl: string;
 }
 
 interface ContentPlanFormProps {
@@ -36,6 +37,7 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
       platform: "Instagram",
       constraints: "",
       designElements: "",
+      productUrl: "",
     },
   ]);
 
@@ -56,6 +58,7 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
         platform: "Instagram",
         constraints: "",
         designElements: "",
+        productUrl: "",
       },
     ]);
   };
@@ -211,6 +214,22 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`productUrl-${entry.id}`}>
+                  {t.booking.contentPlan.productUrl}{" "}
+                  <span className="text-muted-foreground font-normal">
+                    {t.booking.contentPlan.productUrlHint}
+                  </span>
+                </Label>
+                <Input
+                  id={`productUrl-${entry.id}`}
+                  type="url"
+                  placeholder={t.booking.contentPlan.productUrlPlaceholder}
+                  value={entry.productUrl}
+                  onChange={(e) => updateEntry(entry.id, "productUrl", e.target.value)}
+                />
               </div>
 
               <div className="space-y-2">

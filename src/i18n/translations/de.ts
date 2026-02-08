@@ -110,6 +110,10 @@ export const de: TranslationKeys = {
       constraintsHint: "(Datum, Ton, CTA - optional)",
       constraintsPlaceholder:
         "z.B. Startdatum: 15. März, Professioneller Ton, CTA: Jetzt anmelden",
+      productUrl: "Produkt- / Unternehmens-URL",
+      productUrlHint: "(Link zur Produkt- oder Unternehmensseite)",
+      productUrlPlaceholder:
+        "z.B. https://www.meinunternehmen.de/produkt",
       designElements: "Design-Elemente / Inhaltsdetails",
       designElementsHint: "(optional)",
       designElementsPlaceholder:

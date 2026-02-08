@@ -100,6 +100,9 @@ export interface TranslationKeys {
       constraints: string;
       constraintsHint: string;
       constraintsPlaceholder: string;
+      productUrl: string;
+      productUrlHint: string;
+      productUrlPlaceholder: string;
       designElements: string;
       designElementsHint: string;
       designElementsPlaceholder: string;
@@ -320,6 +323,10 @@ export const en: TranslationKeys = {
       constraintsHint: "(date, tone, CTA - optional)",
       constraintsPlaceholder:
         "e.g., Launch date: March 15, Professional tone, CTA: Sign up now",
+      productUrl: "Product / Company URL",
+      productUrlHint: "(link to the product or company page)",
+      productUrlPlaceholder:
+        "e.g., https://www.mycompany.com/product",
       designElements: "Design Elements / Content Details",
       designElementsHint: "(optional)",
       designElementsPlaceholder:
