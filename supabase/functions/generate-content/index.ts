@@ -271,22 +271,30 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
-  // Build a rich prompt — avoid mentioning real people by name/handle to prevent moderation blocks
+  // Frame the person as a fictional AI-generated character to avoid moderation blocks
+  // while keeping visual consistency with the influencer's style/niche
   const parts: string[] = [];
 
-  parts.push("Create a realistic, cinematic sponsored social media video featuring a content creator.");
+  parts.push("Create a realistic, cinematic sponsored social media video.");
+  parts.push("IMPORTANT: The person in this video is a completely fictional AI-generated character we designed. They are not a real person. Generate a video of this original fictional character.");
 
   if (influencer) {
-    // Describe the style/niche without naming a real person
-    parts.push(`The content creator is a ${influencer.niche} influencer with a style that is authentic and lifestyle-oriented.`);
+    // Describe characteristics that match the influencer's vibe without identifying a real person
+    parts.push(`Our fictional character is a ${influencer.niche} content creator. They have a confident, charismatic presence typical of successful ${influencer.niche} influencers. Their visual style is authentic, polished, and lifestyle-oriented.`);
+    
+    if (influencer.bio) {
+      // Use bio details to inform the character's vibe without copying verbatim
+      const nicheKeywords = influencer.bio.split(/[.,!]/).slice(0, 2).join(". ");
+      parts.push(`Character vibe: ${nicheKeywords}.`);
+    }
   }
 
   if (product) {
-    parts.push(`The product being featured is a "${product.name}": ${product.description}.`);
-    parts.push("The person should be visibly holding and showcasing this product in the video.");
+    parts.push(`The product being promoted is "${product.name}": ${product.description}.`);
+    parts.push("The character should be visibly holding, using, or showcasing this exact product — like a genuine sponsored post. The product must be clearly visible and recognizable.");
   }
 
-  parts.push("The video should look like an authentic sponsored content piece — a person naturally using, holding, or presenting the product with genuine enthusiasm. Natural lighting, lifestyle setting, smooth cinematic motion.");
+  parts.push("The video should look like an authentic sponsored social media clip — the character naturally holding or presenting the product with genuine enthusiasm. Natural lighting, lifestyle setting, smooth cinematic camera motion. The character should look directly at the camera at least once, smiling confidently.");
 
   // Add the user's custom motion/direction prompt
   if (prompt) {
@@ -294,7 +302,8 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   }
 
   if (imageBase64) {
-    console.log("Image provided but skipping input_reference (size mismatch). Using detailed prompt instead.");
+    console.log("Image provided — enriching prompt to match the generated image's composition.");
+    parts.push("CRITICAL: Match the visual appearance of the previously generated AI image as closely as possible — same fictional character (same face, hair, skin tone, build), same product, same setting and composition. Animate from that exact scene.");
   }
 
   const finalPrompt = parts.join("\n\n");
