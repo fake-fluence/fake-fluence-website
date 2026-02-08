@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Trash2, Sparkles, Loader2, Linkedin, Instagram } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export interface ContentPlanEntry {
@@ -166,12 +166,52 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        <span className="flex items-center gap-2">
+                          {entry.platform === "LinkedIn" && (
+                            <>
+                              <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                              {t.booking.contentPlan.platforms.linkedin}
+                            </>
+                          )}
+                          {entry.platform === "Instagram" && (
+                            <>
+                              <Instagram className="w-4 h-4 text-[#E4405F]" />
+                              {t.booking.contentPlan.platforms.instagram}
+                            </>
+                          )}
+                          {entry.platform === "Both" && (
+                            <>
+                              <span className="flex items-center gap-1">
+                                <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                                <Instagram className="w-4 h-4 text-[#E4405F]" />
+                              </span>
+                              {t.booking.contentPlan.platforms.both}
+                            </>
+                          )}
+                        </span>
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="LinkedIn">{t.booking.contentPlan.platforms.linkedin}</SelectItem>
-                      <SelectItem value="Instagram">{t.booking.contentPlan.platforms.instagram}</SelectItem>
-                      <SelectItem value="Both">{t.booking.contentPlan.platforms.both}</SelectItem>
+                      <SelectItem value="LinkedIn">
+                        <span className="flex items-center gap-2">
+                          <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                          {t.booking.contentPlan.platforms.linkedin}
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="Instagram">
+                        <span className="flex items-center gap-2">
+                          <Instagram className="w-4 h-4 text-[#E4405F]" />
+                          {t.booking.contentPlan.platforms.instagram}
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="Both">
+                        <span className="flex items-center gap-2">
+                          <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                          <Instagram className="w-4 h-4 text-[#E4405F]" />
+                          {t.booking.contentPlan.platforms.both}
+                        </span>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
