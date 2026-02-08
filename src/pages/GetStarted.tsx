@@ -1,17 +1,17 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductUploadForm from "@/components/ProductUploadForm";
 import MatchResultCard from "@/components/MatchResultCard";
-import ContentPreviewCarousel from "@/components/ContentPreviewCarousel";
-import { influencers, type Influencer, type ContentType } from "@/data/influencers";
+import { influencers, type Influencer } from "@/data/influencers";
 import { ArrowLeft, Sparkles, SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 
-type Step = "upload" | "results" | "preview";
+type Step = "upload" | "results";
 
 interface ProductData {
   images: string[];
@@ -25,19 +25,19 @@ interface MatchResult {
   matchScore: number;
   matchReason: string;
 }
+
 const MIN_MATCH_SCORE = 65;
 
 const GetStarted = () => {
+  const navigate = useNavigate();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [step, setStep] = useState<Step>("upload");
   const [isLoading, setIsLoading] = useState(false);
   const [productData, setProductData] = useState<ProductData | null>(null);
   const [results, setResults] = useState<MatchResult[]>([]);
-  const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
-  const [selectedContentType, setSelectedContentType] = useState<ContentType>("post");
   const [showModifySearch, setShowModifySearch] = useState(false);
   const [showOthers, setShowOthers] = useState(false);
-  const { toast } = useToast();
 
   const handleUpload = async (data: ProductData) => {
     setIsLoading(true);
@@ -107,23 +107,13 @@ const GetStarted = () => {
     }
   };
 
-  const handleSelectCreator = (influencer: Influencer, contentType: ContentType) => {
-    setSelectedInfluencer(influencer);
-    setSelectedContentType(contentType);
+  const handleSelectCreator = (influencer: Influencer) => {
     // Store product data for the booking page
     if (productData) {
       localStorage.setItem("bookingProductData", JSON.stringify(productData));
     }
-    setStep("preview");
-  };
-
-  const handlePurchase = () => {
-    toast({
-      title: "Content Purchased! 🎉",
-      description: `Your ${selectedInfluencer?.name} content has been added to your order. You'll receive the final assets within 24 hours.`,
-    });
-    setStep("results");
-    setSelectedInfluencer(null);
+    // Navigate directly to the booking page
+    navigate(`/book/${influencer.id}`);
   };
 
   // Filter results: only show accounts above the minimum match score
@@ -327,16 +317,6 @@ const GetStarted = () => {
           )}
         </div>
       </div>
-
-      {/* Content preview overlay */}
-      {step === "preview" && selectedInfluencer && (
-        <ContentPreviewCarousel
-          influencer={selectedInfluencer}
-          contentType={selectedContentType}
-          onClose={() => setStep("results")}
-          onPurchase={handlePurchase}
-        />
-      )}
 
       <Footer />
     </main>

@@ -1,25 +1,26 @@
-import { type Influencer, contentTypeLabels, type ContentType } from "@/data/influencers";
+import { type Influencer } from "@/data/influencers";
 import { BadgeCheck, Users, Eye, ShoppingCart, Heart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 interface MatchResultCardProps {
   influencer: Influencer;
   matchScore: number;
   matchReason: string;
   index: number;
-  onSelect: (influencer: Influencer, contentType: ContentType) => void;
+  onSelect: (influencer: Influencer) => void;
 }
 
 const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect }: MatchResultCardProps) => {
   const navigate = useNavigate();
-  const [selectedType, setSelectedType] = useState<ContentType>("post");
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "text-green-400";
     if (score >= 75) return "text-primary";
     return "text-muted-foreground";
   };
+
+  const platformData = influencer.platforms.instagram;
 
   return (
     <div
@@ -29,7 +30,7 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
       {/* Avatar */}
       <div className="relative w-full sm:w-32 h-48 sm:h-32 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={influencer.platforms.instagram.avatar}
+          src={platformData.avatar}
           alt={influencer.name}
           className="w-full h-full object-cover"
         />
@@ -61,19 +62,19 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
         <div className="flex flex-wrap gap-4 mb-4">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Users className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.platforms.instagram.followers}</span>
+            <span className="text-xs font-body">{platformData.followers}</span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Heart className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.platforms.instagram.engagement}</span>
+            <span className="text-xs font-body">{platformData.engagement}</span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Eye className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.platforms.instagram.avgViews}</span>
+            <span className="text-xs font-body">{platformData.avgViews}</span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <ShoppingCart className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.platforms.instagram.conversionRate}</span>
+            <span className="text-xs font-body">{platformData.conversionRate}</span>
           </div>
         </div>
 
@@ -89,23 +90,17 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
       {/* Pricing + CTA */}
       <div className="sm:w-56 flex-shrink-0 space-y-3">
         <p className="text-xs text-muted-foreground font-body font-medium uppercase tracking-wider">
-          Content Type & Price
+          Pricing
         </p>
         <div className="space-y-1.5">
-          {(Object.keys(contentTypeLabels) as ContentType[]).map((type) => (
-            <button
-              key={type}
-              onClick={() => setSelectedType(type)}
-              className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-xs font-body transition-all ${
-                selectedType === type
-                  ? "bg-primary/10 border border-primary/30 text-foreground"
-                  : "bg-surface border border-border text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span>{contentTypeLabels[type]}</span>
-              <span className="font-semibold">${influencer.platforms.instagram.pricing[type]}</span>
-            </button>
-          ))}
+          <div className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 text-foreground text-xs font-body">
+            <span>AI Image</span>
+            <span className="font-semibold">${platformData.pricing.image}</span>
+          </div>
+          <div className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-surface border border-border text-muted-foreground text-xs font-body">
+            <span>+ Video Upgrade</span>
+            <span className="font-semibold">+${platformData.pricing.videoUpgrade}</span>
+          </div>
         </div>
 
         <Button
@@ -113,7 +108,7 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
           className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity"
           size="sm"
         >
-          Book Now — ${influencer.platforms.instagram.pricing[selectedType]}
+          Book Now — ${platformData.pricing.image}
         </Button>
       </div>
     </div>

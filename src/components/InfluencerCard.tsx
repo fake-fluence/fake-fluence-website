@@ -1,5 +1,5 @@
-import { type Influencer, contentTypeLabels, type ContentType, type Platform, platformLabels, getDisplayHandle } from "@/data/influencers";
-import { BadgeCheck, Heart, Users, Eye, ShoppingCart, Instagram, Linkedin, Music } from "lucide-react";
+import { type Influencer, type Platform, platformLabels, getDisplayHandle } from "@/data/influencers";
+import { BadgeCheck, Heart, Users, Eye, ShoppingCart, Instagram, Linkedin, Music, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -14,21 +14,11 @@ interface InfluencerCardProps {
 }
 
 const InfluencerCard = ({ influencer, index, showFullPricing = false }: InfluencerCardProps) => {
-  const [selectedType, setSelectedType] = useState<ContentType>("post");
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>("instagram");
   const [profileOpen, setProfileOpen] = useState(false);
   const { t } = useLanguage();
 
   const platformData = influencer.platforms[selectedPlatform];
-
-  const getPricingLabel = (type: ContentType): string => {
-    const labels: Record<ContentType, string> = {
-      post: t.influencer.pricing.photoPost,
-      "post-description": t.influencer.pricing.postCaption,
-      video: t.influencer.pricing.fullVideo,
-    };
-    return labels[type];
-  };
 
   return (
     <>
@@ -48,7 +38,7 @@ const InfluencerCard = ({ influencer, index, showFullPricing = false }: Influenc
 
           {/* Price badge */}
           <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-surface/80 backdrop-blur-sm border border-border text-sm font-body font-semibold text-foreground">
-            {t.common.from} ${platformData.pricing.post}
+            {t.common.from} ${platformData.pricing.image}
           </div>
         </div>
 
@@ -109,27 +99,21 @@ const InfluencerCard = ({ influencer, index, showFullPricing = false }: Influenc
             </div>
           </div>
 
-          {/* Content type pricing */}
+          {/* Pricing display */}
           {showFullPricing && (
             <div className="mb-4 space-y-2 mt-auto">
               <p className="text-xs text-muted-foreground font-body font-medium uppercase tracking-wider">
-                {t.booking.contentPlan.postType.split(" / ")[0]}
+                Pricing
               </p>
               <div className="flex flex-col gap-1.5">
-                {(Object.keys(contentTypeLabels) as ContentType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setSelectedType(type)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-body transition-all ${
-                      selectedType === type
-                        ? "bg-primary/10 border border-primary/30 text-foreground"
-                        : "bg-surface border border-border text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <span>{getPricingLabel(type)}</span>
-                    <span className="font-semibold">${platformData.pricing[type]}</span>
-                  </button>
-                ))}
+                <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 text-foreground text-xs font-body">
+                  <span>AI Image</span>
+                  <span className="font-semibold">${platformData.pricing.image}</span>
+                </div>
+                <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-surface border border-border text-muted-foreground text-xs font-body">
+                  <span>+ Video Upgrade</span>
+                  <span className="font-semibold">+${platformData.pricing.videoUpgrade}</span>
+                </div>
               </div>
             </div>
           )}
@@ -137,38 +121,18 @@ const InfluencerCard = ({ influencer, index, showFullPricing = false }: Influenc
           {!showFullPricing && (
             <div className="mb-4 text-center py-2 rounded-lg bg-surface border border-border mt-auto">
               <span className="text-xs text-muted-foreground font-body">{t.common.from} </span>
-              <span className="text-sm font-display font-bold text-gradient-gold">${platformData.pricing.post}</span>
+              <span className="text-sm font-display font-bold text-gradient-gold">${platformData.pricing.image}</span>
             </div>
           )}
 
-          {showFullPricing ? (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1 font-body font-semibold text-sm"
-                size="sm"
-                onClick={() => setProfileOpen(true)}
-              >
-                {t.influencer.viewProfile}
-              </Button>
-              <Link to={`/book/${influencer.id}`} className="flex-1">
-                <Button
-                  className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity"
-                  size="sm"
-                >
-                  {t.influencer.bookCreator}
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <Button
-              className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity mt-auto"
-              size="sm"
-              onClick={() => setProfileOpen(true)}
-            >
-              {t.influencer.viewProfile}
-            </Button>
-          )}
+          {/* View Profile button - booking requires search first */}
+          <Button
+            className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity mt-auto"
+            size="sm"
+            onClick={() => setProfileOpen(true)}
+          >
+            {t.influencer.viewProfile}
+          </Button>
         </div>
       </div>
 
