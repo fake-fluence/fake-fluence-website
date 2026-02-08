@@ -157,40 +157,31 @@ async function editImage(apiKey: string, body: EditImageRequest): Promise<Respon
 }
 
 async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promise<Response> {
-  const { prompt, imageBase64, seconds = "5", size = "1080p" } = body;
+  const { prompt, imageBase64, seconds = "5" } = body;
 
-  // Build the request body
+  // Build the request body for OpenAI Sora 2 API
   const requestBody: Record<string, unknown> = {
-    model: "sora",
-    input: [
-      {
-        type: "text",
-        text: prompt,
-      },
-    ],
-    duration: parseInt(seconds),
-    aspect_ratio: "16:9",
+    model: "sora-2",
+    prompt,
+    seconds: parseInt(seconds),
+    size: "1280x720", // landscape HD
   };
 
-  // If we have an image, add it as a reference
+  // If we have an image, add it as input reference
   if (imageBase64) {
     requestBody.input = [
       {
-        type: "image",
-        image: {
-          type: "base64",
-          media_type: "image/png",
-          data: imageBase64,
+        type: "image_url",
+        image_url: {
+          url: `data:image/png;base64,${imageBase64}`,
         },
-      },
-      {
-        type: "text",
-        text: prompt,
       },
     ];
   }
 
-  const response = await fetch("https://api.openai.com/v1/videos/generations", {
+  console.log("Creating video with model:", requestBody.model, "seconds:", requestBody.seconds);
+
+  const response = await fetch("https://api.openai.com/v1/videos", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -202,10 +193,11 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   if (!response.ok) {
     const errorText = await response.text();
     console.error("OpenAI video generation error:", response.status, errorText);
-    throw new Error(`Video generation failed: ${response.status}`);
+    throw new Error(`Video generation failed: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
+  console.log("Video job created:", data.id);
   
   return new Response(
     JSON.stringify({ jobId: data.id, status: data.status }),
@@ -216,7 +208,7 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 async function getVideoStatus(apiKey: string, body: VideoStatusRequest): Promise<Response> {
   const { jobId } = body;
 
-  const response = await fetch(`https://api.openai.com/v1/videos/generations/${jobId}`, {
+  const response = await fetch(`https://api.openai.com/v1/videos/${jobId}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -230,6 +222,7 @@ async function getVideoStatus(apiKey: string, body: VideoStatusRequest): Promise
   }
 
   const data = await response.json();
+  console.log("Video status:", data.status);
   
   return new Response(
     JSON.stringify({ 
@@ -245,7 +238,7 @@ async function downloadVideo(apiKey: string, body: VideoStatusRequest): Promise<
   const { jobId } = body;
 
   // First get the status to get the output URL
-  const statusResponse = await fetch(`https://api.openai.com/v1/videos/generations/${jobId}`, {
+  const statusResponse = await fetch(`https://api.openai.com/v1/videos/${jobId}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -265,11 +258,14 @@ async function downloadVideo(apiKey: string, body: VideoStatusRequest): Promise<
     );
   }
 
-  // Get the video URL from the output
-  const videoUrl = statusData.output?.url;
+  // Get the video URL from the output - Sora 2 returns output.url
+  const videoUrl = statusData.output?.url || statusData.url;
   if (!videoUrl) {
+    console.error("Video data structure:", JSON.stringify(statusData));
     throw new Error("No video URL in completed job");
   }
+
+  console.log("Downloading video from:", videoUrl);
 
   // Fetch the video and convert to base64
   const videoResponse = await fetch(videoUrl);
