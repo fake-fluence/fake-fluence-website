@@ -29,7 +29,7 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
       {/* Avatar */}
       <div className="relative w-full sm:w-32 h-48 sm:h-32 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={influencer.avatar}
+          src={influencer.platforms.instagram.avatar}
           alt={influencer.name}
           className="w-full h-full object-cover"
         />
@@ -61,19 +61,19 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
         <div className="flex flex-wrap gap-4 mb-4">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Users className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.followers}</span>
+            <span className="text-xs font-body">{influencer.platforms.instagram.followers}</span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Heart className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.engagement}</span>
+            <span className="text-xs font-body">{influencer.platforms.instagram.engagement}</span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Eye className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.avgViews}</span>
+            <span className="text-xs font-body">{influencer.platforms.instagram.avgViews}</span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <ShoppingCart className="w-3.5 h-3.5" />
-            <span className="text-xs font-body">{influencer.conversionRate}</span>
+            <span className="text-xs font-body">{influencer.platforms.instagram.conversionRate}</span>
           </div>
         </div>
 
@@ -103,7 +103,7 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
               }`}
             >
               <span>{contentTypeLabels[type]}</span>
-              <span className="font-semibold">${influencer.pricing[type]}</span>
+              <span className="font-semibold">${influencer.platforms.instagram.pricing[type]}</span>
             </button>
           ))}
         </div>
@@ -113,7 +113,7 @@ const MatchResultCard = ({ influencer, matchScore, matchReason, index, onSelect 
           className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold text-sm hover:opacity-90 transition-opacity"
           size="sm"
         >
-          Book Now — ${influencer.pricing[selectedType]}
+          Book Now — ${influencer.platforms.instagram.pricing[selectedType]}
         </Button>
       </div>
     </div>
