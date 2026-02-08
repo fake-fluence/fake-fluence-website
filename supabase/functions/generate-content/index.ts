@@ -101,7 +101,18 @@ async function generateImage(apiKey: string, body: GenerateImageRequest): Promis
   if (!response.ok) {
     const errorText = await response.text();
     console.error("OpenAI image generation error:", response.status, errorText);
-    throw new Error(`Image generation failed: ${response.status}`);
+    
+    // Parse error for user-friendly message
+    try {
+      const errorData = JSON.parse(errorText);
+      if (errorData.error?.code === "moderation_blocked") {
+        throw new Error("Your prompt was flagged by content moderation. Please try a different description.");
+      }
+      throw new Error(errorData.error?.message || `Image generation failed: ${response.status}`);
+    } catch (e) {
+      if (e instanceof Error && e.message.includes("moderation")) throw e;
+      throw new Error(`Image generation failed: ${response.status}`);
+    }
   }
 
   const data = await response.json();
