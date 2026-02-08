@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Calendar, CreditCard } from "lucide-react";
+import { CheckCircle, Calendar, CreditCard, Image, Film } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -31,22 +31,30 @@ const BookingSummary = ({
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Calculate total based on selected variations and platforms
+  // Calculate total based on images + video upgrades
   const calculateTotal = () => {
     let total = 0;
     posts.forEach((post) => {
-      if (post.selectedVariation !== null) {
+      if (post.imageBase64) {
         // Get the platform-specific pricing
         const platform = post.planEntry.platform.toLowerCase() as "instagram" | "linkedin" | "tiktok";
-        const basePrice = creator.platforms[platform].pricing["post-description"];
-        total += basePrice;
+        const pricing = creator.platforms[platform].pricing;
+        
+        // Base image price
+        total += pricing.image;
+        
+        // Add video upgrade if video was generated
+        if (post.videoBase64) {
+          total += pricing.videoUpgrade;
+        }
       }
     });
     return total;
   };
 
   const total = calculateTotal();
-  const selectedCount = posts.filter((p) => p.selectedVariation !== null).length;
+  const imageCount = posts.filter((p) => p.imageBase64).length;
+  const videoCount = posts.filter((p) => p.videoBase64).length;
 
   const handleConfirm = () => {
     setIsOpen(false);
@@ -79,30 +87,49 @@ const BookingSummary = ({
         <div className="py-4 space-y-4">
           <div className="space-y-3">
             {posts.map((post) => {
-              if (post.selectedVariation === null) return null;
-              const variation = post.variations[post.selectedVariation];
+              if (!post.imageBase64) return null;
               const platform = post.planEntry.platform.toLowerCase() as "instagram" | "linkedin" | "tiktok";
-              const price = creator.platforms[platform].pricing["post-description"];
+              const pricing = creator.platforms[platform].pricing;
+              const hasVideo = !!post.videoBase64;
 
               return (
                 <div
                   key={post.id}
-                  className="flex items-start justify-between p-3 bg-muted/50 rounded-lg"
+                  className="p-3 bg-muted/50 rounded-lg space-y-2"
                 >
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-4 h-4 text-primary mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {post.planEntry.postType}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {post.planEntry.platform} • {variation.tone}
-                      </p>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-4 h-4 text-primary mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {post.planEntry.postType}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {post.planEntry.platform}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <span className="text-sm font-medium">
-                    ${price}
-                  </span>
+                  
+                  {/* Pricing breakdown */}
+                  <div className="ml-7 space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-1.5 text-muted-foreground">
+                        <Image className="w-3 h-3" />
+                        AI Image
+                      </span>
+                      <span className="font-medium">${pricing.image}</span>
+                    </div>
+                    {hasVideo && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                          <Film className="w-3 h-3" />
+                          Video Upgrade
+                        </span>
+                        <span className="font-medium">+${pricing.videoUpgrade}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -114,7 +141,8 @@ const BookingSummary = ({
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="w-4 h-4" />
               <span className="text-sm">
-                {selectedCount} {t.booking.summary.postsSelected}
+                {imageCount} image{imageCount !== 1 ? "s" : ""}
+                {videoCount > 0 && `, ${videoCount} video${videoCount !== 1 ? "s" : ""}`}
               </span>
             </div>
             <div className="text-right">

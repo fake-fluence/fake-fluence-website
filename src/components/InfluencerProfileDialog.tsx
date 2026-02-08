@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type Influencer, type Platform, type ContentType, contentTypeLabels, platformLabels, getDisplayHandle } from "@/data/influencers";
+import { type Influencer, type Platform, platformLabels, getDisplayHandle } from "@/data/influencers";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Link } from "react-router-dom";
 import {
@@ -23,6 +23,7 @@ import {
   Instagram,
   Linkedin,
   Music,
+  Sparkles,
 } from "lucide-react";
 
 interface InfluencerProfileDialogProps {
@@ -33,19 +34,9 @@ interface InfluencerProfileDialogProps {
 
 const InfluencerProfileDialog = ({ influencer, open, onOpenChange }: InfluencerProfileDialogProps) => {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>("instagram");
-  const [selectedType, setSelectedType] = useState<ContentType>("post");
   const { t } = useLanguage();
 
   const platformData = influencer.platforms[selectedPlatform];
-
-  const getPricingLabel = (type: ContentType): string => {
-    const labels: Record<ContentType, string> = {
-      post: t.influencer.pricing.photoPost,
-      "post-description": t.influencer.pricing.postCaption,
-      video: t.influencer.pricing.fullVideo,
-    };
-    return labels[type];
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -167,41 +158,36 @@ const InfluencerProfileDialog = ({ influencer, open, onOpenChange }: InfluencerP
             </div>
           </div>
 
-          {/* Pricing */}
+          {/* Simplified Pricing */}
           <div>
             <h3 className="text-sm font-display font-semibold text-foreground mb-2">
               {t.profile.pricing}
             </h3>
             <div className="flex flex-col gap-1.5">
-              {(Object.keys(contentTypeLabels) as ContentType[]).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedType(type)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-body transition-all ${
-                    selectedType === type
-                      ? "bg-primary/10 border border-primary/30 text-foreground"
-                      : "bg-surface border border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <span>{getPricingLabel(type)}</span>
-                  <span className="font-semibold">${platformData.pricing[type]}</span>
-                </button>
-              ))}
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-primary/10 border border-primary/30 text-foreground text-sm font-body">
+                <span>AI Image</span>
+                <span className="font-semibold">${platformData.pricing.image}</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-surface border border-border text-muted-foreground text-sm font-body">
+                <span>+ Video Upgrade</span>
+                <span className="font-semibold">+${platformData.pricing.videoUpgrade}</span>
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
+          {/* Actions - prompts user to search for creators first */}
+          <div className="flex flex-col gap-3 pt-2">
             <Button
               variant="outline"
-              className="flex-1 font-body"
+              className="w-full font-body"
               onClick={() => onOpenChange(false)}
             >
               {t.profile.close}
             </Button>
-            <Link to={`/book/${influencer.id}`} className="flex-1">
-              <Button className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold hover:opacity-90 transition-opacity">
-                {t.profile.bookNow}
+            <Link to="/get-started" className="w-full">
+              <Button className="w-full bg-gradient-gold text-primary-foreground font-body font-semibold hover:opacity-90 transition-opacity gap-2">
+                <Sparkles className="w-4 h-4" />
+                Find Best Match for My Product
               </Button>
             </Link>
           </div>

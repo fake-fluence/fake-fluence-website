@@ -72,10 +72,10 @@ const Browse = () => {
         result = [...result].sort((a, b) => b.platforms.instagram.followersNum - a.platforms.instagram.followersNum);
         break;
       case "price-low":
-        result = [...result].sort((a, b) => a.platforms.instagram.pricing.post - b.platforms.instagram.pricing.post);
+        result = [...result].sort((a, b) => a.platforms.instagram.pricing.image - b.platforms.instagram.pricing.image);
         break;
       case "price-high":
-        result = [...result].sort((a, b) => b.platforms.instagram.pricing.post - a.platforms.instagram.pricing.post);
+        result = [...result].sort((a, b) => b.platforms.instagram.pricing.image - a.platforms.instagram.pricing.image);
         break;
       case "engagement":
         result = [...result].sort(

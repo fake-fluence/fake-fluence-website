@@ -25,14 +25,11 @@ import influencer8TikTok from "@/assets/influencer-8-tiktok.jpg";
 
 export type Category = "all" | "women" | "men" | "pets" | "other";
 
-export type ContentType = "post" | "post-description" | "video";
-
 export type Platform = "instagram" | "linkedin" | "tiktok";
 
 export interface ContentPricing {
-  post: number;
-  "post-description": number;
-  video: number;
+  image: number;        // Base price for AI-generated image
+  videoUpgrade: number; // Additional price to upgrade image → video
 }
 
 export interface PlatformData {
@@ -75,10 +72,9 @@ export function getDisplayHandle(influencer: Influencer, platform: Platform): st
   }
 }
 
-export const contentTypeLabels: Record<ContentType, string> = {
-  post: "Photo Post",
-  "post-description": "Post + Caption",
-  video: "Full Video",
+export const pricingLabels = {
+  image: "AI Image",
+  videoUpgrade: "+ Video Upgrade",
 };
 
 export const platformLabels: Record<Platform, string> = {
@@ -110,7 +106,7 @@ export const influencers: Influencer[] = [
         engagement: "4.8%",
         avgViews: "450K",
         conversionRate: "3.2%",
-        pricing: { post: 199, "post-description": 299, video: 599 },
+        pricing: { image: 199, videoUpgrade: 300 },
       },
       linkedin: {
         avatar: influencer1LinkedIn,
@@ -119,7 +115,7 @@ export const influencers: Influencer[] = [
         engagement: "6.2%",
         avgViews: "32K",
         conversionRate: "5.1%",
-        pricing: { post: 149, "post-description": 249, video: 499 },
+        pricing: { image: 149, videoUpgrade: 250 },
       },
       tiktok: {
         avatar: influencer1TikTok,
@@ -128,7 +124,7 @@ export const influencers: Influencer[] = [
         engagement: "7.5%",
         avgViews: "1.2M",
         conversionRate: "2.8%",
-        pricing: { post: 249, "post-description": 399, video: 799 },
+        pricing: { image: 249, videoUpgrade: 400 },
       },
     },
   },
@@ -154,7 +150,7 @@ export const influencers: Influencer[] = [
         engagement: "5.2%",
         avgViews: "320K",
         conversionRate: "4.1%",
-        pricing: { post: 149, "post-description": 249, video: 499 },
+        pricing: { image: 149, videoUpgrade: 250 },
       },
       linkedin: {
         avatar: influencer2LinkedIn,
@@ -163,7 +159,7 @@ export const influencers: Influencer[] = [
         engagement: "5.8%",
         avgViews: "18K",
         conversionRate: "6.2%",
-        pricing: { post: 99, "post-description": 179, video: 349 },
+        pricing: { image: 99, videoUpgrade: 150 },
       },
       tiktok: {
         avatar: influencer2TikTok,
@@ -172,7 +168,7 @@ export const influencers: Influencer[] = [
         engagement: "8.1%",
         avgViews: "850K",
         conversionRate: "3.5%",
-        pricing: { post: 199, "post-description": 329, video: 649 },
+        pricing: { image: 199, videoUpgrade: 350 },
       },
     },
   },
@@ -198,7 +194,7 @@ export const influencers: Influencer[] = [
         engagement: "3.9%",
         avgViews: "780K",
         conversionRate: "2.8%",
-        pricing: { post: 299, "post-description": 449, video: 899 },
+        pricing: { image: 299, videoUpgrade: 450 },
       },
       linkedin: {
         avatar: influencer3LinkedIn,
@@ -207,7 +203,7 @@ export const influencers: Influencer[] = [
         engagement: "4.5%",
         avgViews: "95K",
         conversionRate: "4.2%",
-        pricing: { post: 199, "post-description": 349, video: 699 },
+        pricing: { image: 199, videoUpgrade: 350 },
       },
       tiktok: {
         avatar: influencer3TikTok,
@@ -216,7 +212,7 @@ export const influencers: Influencer[] = [
         engagement: "6.8%",
         avgViews: "2.1M",
         conversionRate: "2.1%",
-        pricing: { post: 399, "post-description": 599, video: 1199 },
+        pricing: { image: 399, videoUpgrade: 600 },
       },
     },
   },
@@ -242,7 +238,7 @@ export const influencers: Influencer[] = [
         engagement: "6.1%",
         avgViews: "280K",
         conversionRate: "5.3%",
-        pricing: { post: 129, "post-description": 199, video: 399 },
+        pricing: { image: 129, videoUpgrade: 200 },
       },
       linkedin: {
         avatar: influencer4LinkedIn,
@@ -251,7 +247,7 @@ export const influencers: Influencer[] = [
         engagement: "5.2%",
         avgViews: "45K",
         conversionRate: "6.8%",
-        pricing: { post: 89, "post-description": 149, video: 299 },
+        pricing: { image: 89, videoUpgrade: 160 },
       },
       tiktok: {
         avatar: influencer4TikTok,
@@ -260,7 +256,7 @@ export const influencers: Influencer[] = [
         engagement: "9.2%",
         avgViews: "720K",
         conversionRate: "4.1%",
-        pricing: { post: 179, "post-description": 279, video: 549 },
+        pricing: { image: 179, videoUpgrade: 270 },
       },
     },
   },
@@ -286,7 +282,7 @@ export const influencers: Influencer[] = [
         engagement: "8.2%",
         avgViews: "1.2M",
         conversionRate: "6.1%",
-        pricing: { post: 399, "post-description": 599, video: 1199 },
+        pricing: { image: 399, videoUpgrade: 600 },
       },
       linkedin: {
         avatar: influencer5LinkedIn,
@@ -295,7 +291,7 @@ export const influencers: Influencer[] = [
         engagement: "4.8%",
         avgViews: "28K",
         conversionRate: "7.2%",
-        pricing: { post: 149, "post-description": 249, video: 499 },
+        pricing: { image: 149, videoUpgrade: 250 },
       },
       tiktok: {
         avatar: influencer5TikTok,
@@ -304,7 +300,7 @@ export const influencers: Influencer[] = [
         engagement: "12.5%",
         avgViews: "4.5M",
         conversionRate: "5.2%",
-        pricing: { post: 599, "post-description": 899, video: 1799 },
+        pricing: { image: 599, videoUpgrade: 900 },
       },
     },
   },
@@ -330,7 +326,7 @@ export const influencers: Influencer[] = [
         engagement: "7.5%",
         avgViews: "650K",
         conversionRate: "5.5%",
-        pricing: { post: 249, "post-description": 399, video: 799 },
+        pricing: { image: 249, videoUpgrade: 400 },
       },
       linkedin: {
         avatar: influencer6LinkedIn,
@@ -339,7 +335,7 @@ export const influencers: Influencer[] = [
         engagement: "5.1%",
         avgViews: "18K",
         conversionRate: "6.8%",
-        pricing: { post: 99, "post-description": 179, video: 359 },
+        pricing: { image: 99, videoUpgrade: 180 },
       },
       tiktok: {
         avatar: influencer6TikTok,
@@ -348,7 +344,7 @@ export const influencers: Influencer[] = [
         engagement: "11.2%",
         avgViews: "2.8M",
         conversionRate: "4.8%",
-        pricing: { post: 449, "post-description": 699, video: 1399 },
+        pricing: { image: 449, videoUpgrade: 700 },
       },
     },
   },
@@ -374,7 +370,7 @@ export const influencers: Influencer[] = [
         engagement: "5.8%",
         avgViews: "190K",
         conversionRate: "4.7%",
-        pricing: { post: 99, "post-description": 169, video: 349 },
+        pricing: { image: 99, videoUpgrade: 180 },
       },
       linkedin: {
         avatar: influencer7LinkedIn,
@@ -383,7 +379,7 @@ export const influencers: Influencer[] = [
         engagement: "6.5%",
         avgViews: "12K",
         conversionRate: "7.1%",
-        pricing: { post: 69, "post-description": 119, video: 249 },
+        pricing: { image: 69, videoUpgrade: 130 },
       },
       tiktok: {
         avatar: influencer7TikTok,
@@ -392,7 +388,7 @@ export const influencers: Influencer[] = [
         engagement: "8.9%",
         avgViews: "580K",
         conversionRate: "3.9%",
-        pricing: { post: 149, "post-description": 239, video: 479 },
+        pricing: { image: 149, videoUpgrade: 250 },
       },
     },
   },
@@ -418,7 +414,7 @@ export const influencers: Influencer[] = [
         engagement: "4.5%",
         avgViews: "340K",
         conversionRate: "3.8%",
-        pricing: { post: 179, "post-description": 279, video: 549 },
+        pricing: { image: 179, videoUpgrade: 270 },
       },
       linkedin: {
         avatar: influencer8LinkedIn,
@@ -427,7 +423,7 @@ export const influencers: Influencer[] = [
         engagement: "5.8%",
         avgViews: "62K",
         conversionRate: "5.5%",
-        pricing: { post: 129, "post-description": 219, video: 439 },
+        pricing: { image: 129, videoUpgrade: 210 },
       },
       tiktok: {
         avatar: influencer8TikTok,
@@ -436,7 +432,7 @@ export const influencers: Influencer[] = [
         engagement: "7.8%",
         avgViews: "980K",
         conversionRate: "3.2%",
-        pricing: { post: 229, "post-description": 369, video: 729 },
+        pricing: { image: 229, videoUpgrade: 350 },
       },
     },
   },
