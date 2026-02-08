@@ -35,7 +35,7 @@ interface GeneratedContentCardProps {
   influencerId?: string;
   onGenerateImage: (prompt: string) => void;
   onEditImage: (editPrompt: string) => void;
-  onGenerateVideo: (prompt: string) => void;
+  onGenerateVideo: (prompt: string, options?: { withoutStartingImage?: boolean }) => void;
   onUpdateCaption: (caption: string) => void;
   onCheckVideoStatus: () => void;
 }
@@ -303,17 +303,28 @@ const GeneratedContentCard = ({
               )}
 
               {videoStatus === "failed" && !showVideoPrompt && (
-                <div className="flex items-center justify-center gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                <div className="flex flex-col gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
                   <span className="text-sm text-destructive">
                     Video generation failed. Please try again.
                   </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowVideoPrompt(true)}
-                  >
-                    Retry
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowVideoPrompt(true)}
+                    >
+                      Retry
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => onGenerateVideo("", { withoutStartingImage: true })}
+                      disabled={isGeneratingVideo}
+                      title="Generate a fallback video without using the starting image (may avoid image-based moderation blocks)"
+                    >
+                      Retry without image
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

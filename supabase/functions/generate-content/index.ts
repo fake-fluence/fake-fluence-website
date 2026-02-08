@@ -275,10 +275,16 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   // Build the smallest possible prompt.
   // Note: moderation can still block based on the INPUT IMAGE itself (not just prompt text).
   const rawMotion = String(prompt ?? "").trim().slice(0, 160);
+  const hasStartingFrame = Boolean(imageBase64);
 
-  // If the user leaves it blank, send the tiniest possible placeholder.
-  // (Some providers reject empty prompts.)
-  const finalPrompt = rawMotion.length ? rawMotion : ".";
+  // If the user leaves it blank:
+  // - image-to-video: send the tiniest possible placeholder (avoid any text triggers)
+  // - text-to-video: send a minimal but meaningful safe prompt
+  const finalPrompt = rawMotion.length
+    ? rawMotion
+    : hasStartingFrame
+      ? "."
+      : "abstract b-roll, no people";
 
   // Sora API requires multipart/form-data
   const formData = new FormData();

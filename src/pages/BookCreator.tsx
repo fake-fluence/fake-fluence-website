@@ -255,8 +255,13 @@ const BookCreator = () => {
     }
   };
 
-  const handleGenerateVideo = async (postId: string, prompt: string) => {
+  const handleGenerateVideo = async (
+    postId: string,
+    prompt: string,
+    options?: { withoutStartingImage?: boolean }
+  ) => {
     const post = generatedPosts.find((p) => p.id === postId);
+    const withoutStartingImage = options?.withoutStartingImage ?? false;
 
     setLoadingStates((prev) => ({
       ...prev,
@@ -264,9 +269,7 @@ const BookCreator = () => {
     }));
 
     setGeneratedPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId ? { ...p, videoStatus: "generating" as const } : p
-      )
+      prev.map((p) => (p.id === postId ? { ...p, videoStatus: "generating" as const } : p))
     );
 
     // Build rich context for video generation
@@ -292,11 +295,12 @@ const BookCreator = () => {
       ? productData.images[0].replace(/^data:image\/[^;]+;base64,/, "")
       : null;
 
-    // IMPORTANT: Sora requires the starting frame to match the requested size (1280x720)
+    // IMPORTANT: For image-to-video, Sora requires the starting frame to match the requested size (1280x720)
     // so we crop/pad it client-side before sending it to the backend function.
-    const soraInput = post?.imageBase64
-      ? await prepareSoraInputReference(post.imageBase64, { width: 1280, height: 720 })
-      : null;
+    const soraInput =
+      !withoutStartingImage && post?.imageBase64
+        ? await prepareSoraInputReference(post.imageBase64, { width: 1280, height: 720 })
+        : null;
 
     try {
       const result = await callGenerateContent("generate-video", {
@@ -312,23 +316,19 @@ const BookCreator = () => {
 
       setGeneratedPosts((prev) =>
         prev.map((p) =>
-          p.id === postId
-            ? { ...p, videoJobId: result.jobId, videoStatus: "generating" as const }
-            : p
+          p.id === postId ? { ...p, videoJobId: result.jobId, videoStatus: "generating" as const } : p
         )
       );
 
       toast({
         title: "Video generation started!",
-        description: "This may take a few minutes. We'll check the status automatically.",
+        description: withoutStartingImage
+          ? "Generating a fallback video without the starting image (this can avoid image-based moderation blocks)."
+          : "This may take a few minutes. We'll check the status automatically.",
       });
     } catch (error) {
       console.error("Error generating video:", error);
-      setGeneratedPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId ? { ...p, videoStatus: "failed" as const } : p
-        )
-      );
+      setGeneratedPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, videoStatus: "failed" as const } : p)));
       toast({
         title: "Video generation failed",
         description: error instanceof Error ? error.message : "Failed to generate video",
@@ -380,11 +380,13 @@ const BookCreator = () => {
           statusResult.error?.code === "moderation_blocked" ||
           String(statusResult.error?.message || "").toLowerCase().includes("moderation");
 
+        const code = statusResult.error?.code ? String(statusResult.error.code) : "";
         const reason = statusResult.error?.message || statusResult.failure_reason || "Unknown error";
+
         toast({
           title: "Video generation failed",
           description: isModerationBlocked
-            ? "Content was blocked by moderation. Try the simplest motion prompt (e.g. 'gentle camera push-in'). If it still blocks, try regenerating the image with no recognizable face / more stylized look."
+            ? `Blocked by moderation${code ? ` (code: ${code})` : ""}. This can happen even with an empty prompt (e.g. ".") if the starting image triggers moderation. Use "Retry without image" to generate a fallback video without the starting frame.`
             : `Failed: ${reason}. Please retry.`,
           variant: "destructive",
         });
@@ -526,7 +528,7 @@ const BookCreator = () => {
                     influencerId={creator.id}
                     onGenerateImage={(prompt) => handleGenerateImage(post.id, prompt)}
                     onEditImage={(prompt) => handleEditImage(post.id, prompt)}
-                    onGenerateVideo={(prompt) => handleGenerateVideo(post.id, prompt)}
+                    onGenerateVideo={(prompt, options) => handleGenerateVideo(post.id, prompt, options)}
                     onUpdateCaption={(caption) => handleUpdateCaption(post.id, caption)}
                     onCheckVideoStatus={() => handleCheckVideoStatus(post.id)}
                   />
