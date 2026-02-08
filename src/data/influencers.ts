@@ -52,6 +52,11 @@ export interface Influencer {
   category: Category;
   niche: string;
   verified: boolean;
+  location: string;
+  age: number;
+  bio: string;
+  languages: string[];
+  joinedYear: number;
   platforms: Record<Platform, PlatformData>;
 }
 
@@ -75,6 +80,11 @@ export const influencers: Influencer[] = [
     category: "women",
     niche: "Fashion & Lifestyle",
     verified: true,
+    location: "Milan, Italy",
+    age: 27,
+    bio: "Fashion-forward content creator blending haute couture with everyday style. Known for stunning editorial shoots and authentic brand partnerships that drive real engagement.",
+    languages: ["English", "Italian", "French"],
+    joinedYear: 2021,
     platforms: {
       instagram: {
         avatar: influencer1,
@@ -112,6 +122,11 @@ export const influencers: Influencer[] = [
     category: "women",
     niche: "Beauty & Travel",
     verified: true,
+    location: "Los Angeles, USA",
+    age: 24,
+    bio: "Globetrotting beauty enthusiast sharing skincare secrets and hidden travel gems. Her authentic reviews and breathtaking travel content inspire wanderlust worldwide.",
+    languages: ["English", "Spanish"],
+    joinedYear: 2022,
     platforms: {
       instagram: {
         avatar: influencer2,
@@ -149,6 +164,11 @@ export const influencers: Influencer[] = [
     category: "men",
     niche: "Fitness & Motivation",
     verified: true,
+    location: "Dubai, UAE",
+    age: 31,
+    bio: "Elite fitness coach and motivational speaker. Transforms lives through science-backed training programs and raw, unfiltered motivational content that pushes boundaries.",
+    languages: ["English", "Arabic"],
+    joinedYear: 2020,
     platforms: {
       instagram: {
         avatar: influencer3,
@@ -186,6 +206,11 @@ export const influencers: Influencer[] = [
     category: "men",
     niche: "Fitness & Wellness",
     verified: false,
+    location: "Barcelona, Spain",
+    age: 28,
+    bio: "Holistic wellness advocate combining functional fitness with mindfulness. Creates content that bridges the gap between physical strength and mental well-being.",
+    languages: ["English", "Spanish", "Portuguese"],
+    joinedYear: 2023,
     platforms: {
       instagram: {
         avatar: influencer4,
@@ -223,6 +248,11 @@ export const influencers: Influencer[] = [
     category: "pets",
     niche: "Pet Life & Products",
     verified: true,
+    location: "Austin, USA",
+    age: 4,
+    bio: "The internet's favorite golden retriever! Buddy reviews toys, treats, and gear while showcasing heartwarming adventures with his human family.",
+    languages: ["English"],
+    joinedYear: 2022,
     platforms: {
       instagram: {
         avatar: influencer5,
@@ -260,6 +290,11 @@ export const influencers: Influencer[] = [
     category: "pets",
     niche: "Cat Content & Reviews",
     verified: true,
+    location: "Tokyo, Japan",
+    age: 3,
+    bio: "Two Scottish Folds taking over the internet one purr at a time. Specializing in honest product reviews and impossibly cute content that melts hearts.",
+    languages: ["English", "Japanese"],
+    joinedYear: 2023,
     platforms: {
       instagram: {
         avatar: influencer6,
@@ -297,6 +332,11 @@ export const influencers: Influencer[] = [
     category: "women",
     niche: "Travel & Lifestyle",
     verified: false,
+    location: "Lisbon, Portugal",
+    age: 26,
+    bio: "Digital nomad capturing the beauty of slow travel and local culture. Her laid-back aesthetic and genuine storytelling create deeply relatable lifestyle content.",
+    languages: ["English", "Portuguese", "German"],
+    joinedYear: 2023,
     platforms: {
       instagram: {
         avatar: influencer7,
@@ -334,6 +374,11 @@ export const influencers: Influencer[] = [
     category: "other",
     niche: "Fashion & Editorial",
     verified: true,
+    location: "Paris, France",
+    age: 29,
+    bio: "Avant-garde fashion editor pushing the boundaries of digital styling. Creates cinematic editorial content that blurs the line between art and commercial fashion.",
+    languages: ["English", "French"],
+    joinedYear: 2021,
     platforms: {
       instagram: {
         avatar: influencer8,

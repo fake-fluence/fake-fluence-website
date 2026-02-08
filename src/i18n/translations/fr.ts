@@ -64,6 +64,18 @@ export const fr: TranslationKeys = {
   footer: {
     copyright: "© 2026 InfluenceAI. Tous les personas IA sont fictifs.",
   },
+  profile: {
+    location: "Localisation",
+    age: "Âge",
+    bio: "À propos",
+    languages: "Langues",
+    memberSince: "Membre depuis",
+    stats: "Statistiques",
+    pricing: "Tarifs",
+    bookNow: "Réserver",
+    close: "Fermer",
+    yearsOld: "ans",
+  },
   influencer: {
     followers: "Abonnés",
     engagement: "Engagement",
