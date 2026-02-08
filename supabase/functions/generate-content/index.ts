@@ -263,7 +263,7 @@ async function editImage(apiKey: string, body: EditImageRequest): Promise<Respon
 }
 
 async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promise<Response> {
-  const { prompt, imageBase64, seconds = "5" } = body;
+  const { prompt, imageBase64, seconds = "4" } = body;
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
