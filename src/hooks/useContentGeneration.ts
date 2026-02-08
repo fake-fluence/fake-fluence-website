@@ -141,7 +141,7 @@ export function useContentGeneration(): UseContentGenerationReturn {
           body: JSON.stringify({
             prompt,
             imageBase64: content.imageBase64,
-            seconds: "5",
+            seconds: "4",
           }),
         }
       );
