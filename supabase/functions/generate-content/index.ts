@@ -301,75 +301,30 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   const enrichedPrompt = parts.join("\n\n");
 
-  let response: globalThis.Response;
-
+  // NOTE: Sora requires input_reference to exactly match the video resolution (e.g. 1280x720),
+  // but the generated images are 1024x1024. Since OpenAI's image API doesn't output 1280x720,
+  // we use text-only video generation and describe the scene in detail via the prompt.
   if (imageBase64) {
-    // The generated image is 1024x1024 but Sora requires input_reference to match
-    // the video size (1280x720). Resize via OpenAI image edit first.
-    console.log("Resizing image from 1024x1024 to 1280x720 for video input_reference");
-    
-    const origBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
-    const origBlob = new Blob([origBytes], { type: "image/png" });
-
-    const resizeForm = new FormData();
-    resizeForm.append("model", "gpt-image-1.5");
-    resizeForm.append("prompt", "Recreate this exact same image with the same content, people, products, and composition. Adapt it to a 16:9 landscape format. Keep everything identical — same person, same product, same style, same lighting.");
-    resizeForm.append("image", origBlob, "original.png");
-    resizeForm.append("size", "1536x1024");
-
-    const resizeResponse = await fetch("https://api.openai.com/v1/images/edits", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: resizeForm,
-    });
-
-    let resizedImageBase64 = imageBase64;
-    if (resizeResponse.ok) {
-      const resizeData = await resizeResponse.json();
-      if (resizeData.data?.[0]?.b64_json) {
-        resizedImageBase64 = resizeData.data[0].b64_json;
-        console.log("Image resized successfully for video");
-      }
-    } else {
-      console.warn("Image resize failed, falling back to text-only video generation");
-    }
-
-    // Now send to Sora with the resized image
-    const imageBytes = Uint8Array.from(atob(resizedImageBase64), (c) => c.charCodeAt(0));
-    const imageBlob = new Blob([imageBytes], { type: "image/png" });
-
-    const formData = new FormData();
-    formData.append("model", "sora-2");
-    formData.append("prompt", enrichedPrompt);
-    formData.append("seconds", seconds);
-    formData.append("size", "1280x720");
-    formData.append("input_reference", imageBlob, "frame.png");
-
-    console.log("Sending video request with input_reference image");
-
-    response = await fetch("https://api.openai.com/v1/videos", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: formData,
-    });
-  } else {
-    // No image — use JSON request
-    response = await fetch("https://api.openai.com/v1/videos", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "sora-2",
-        prompt: enrichedPrompt,
-        seconds,
-        size: "1280x720",
-      }),
-    });
+    console.log("Image provided but skipping input_reference (size mismatch 1024x1024 vs 1280x720). Using detailed prompt instead.");
+    parts.push("IMPORTANT: The starting frame should closely match the previously generated sponsored post image — same person, same product, same setting, same composition. Animate from that scene.");
   }
+
+  // Re-join prompt with the additional image context
+  const finalPrompt = parts.join("\n\n");
+
+  const response = await fetch("https://api.openai.com/v1/videos", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "sora-2",
+      prompt: finalPrompt,
+      seconds,
+      size: "1280x720",
+    }),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
