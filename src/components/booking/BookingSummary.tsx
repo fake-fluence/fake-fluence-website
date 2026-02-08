@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Calendar, CreditCard, Image, Film } from "lucide-react";
+import { CheckCircle, Calendar, CreditCard, Image } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -31,7 +31,7 @@ const BookingSummary = ({
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Calculate total based on images + video upgrades
+  // Calculate total based on images
   const calculateTotal = () => {
     let total = 0;
     posts.forEach((post) => {
@@ -42,11 +42,6 @@ const BookingSummary = ({
         
         // Base image price
         total += pricing.image;
-        
-        // Add video upgrade if video was generated
-        if (post.videoBase64) {
-          total += pricing.videoUpgrade;
-        }
       }
     });
     return total;
@@ -54,7 +49,6 @@ const BookingSummary = ({
 
   const total = calculateTotal();
   const imageCount = posts.filter((p) => p.imageBase64).length;
-  const videoCount = posts.filter((p) => p.videoBase64).length;
 
   const handleConfirm = () => {
     setIsOpen(false);
@@ -90,7 +84,6 @@ const BookingSummary = ({
               if (!post.imageBase64) return null;
               const platform = post.planEntry.platform.toLowerCase() as "instagram" | "linkedin" | "tiktok";
               const pricing = creator.platforms[platform].pricing;
-              const hasVideo = !!post.videoBase64;
 
               return (
                 <div
@@ -120,15 +113,6 @@ const BookingSummary = ({
                       </span>
                       <span className="font-medium">${pricing.image}</span>
                     </div>
-                    {hasVideo && (
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="flex items-center gap-1.5 text-muted-foreground">
-                          <Film className="w-3 h-3" />
-                          Video Upgrade
-                        </span>
-                        <span className="font-medium">+${pricing.videoUpgrade}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               );
@@ -142,7 +126,6 @@ const BookingSummary = ({
               <Calendar className="w-4 h-4" />
               <span className="text-sm">
                 {imageCount} image{imageCount !== 1 ? "s" : ""}
-                {videoCount > 0 && `, ${videoCount} video${videoCount !== 1 ? "s" : ""}`}
               </span>
             </div>
             <div className="text-right">

@@ -7,11 +7,10 @@ import ContentPlanForm, { type ContentPlanEntry } from "@/components/booking/Con
 import GeneratedContentCard from "@/components/booking/GeneratedContentCard";
 import BookingSummary from "@/components/booking/BookingSummary";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import InstagramConnectDialog from "@/components/booking/InstagramConnectDialog";
-import { prepareSoraInputReference } from "@/lib/image/prepareSoraInputReference";
 
 type BookingStep = "plan" | "review" | "confirmed";
 
@@ -19,13 +18,10 @@ export interface GeneratedPost {
   id: string;
   planEntry: ContentPlanEntry;
   imageBase64: string | null;
-  videoBase64: string | null;
-  videoJobId: string | null;
-  videoStatus: "idle" | "generating" | "completed" | "failed";
   caption: string;
   prompt: string;
-  selectedVariation: number | null; // Keep for compatibility with BookingSummary
-  variations: PostVariation[]; // Keep for compatibility
+  selectedVariation: number | null;
+  variations: PostVariation[];
 }
 
 export interface PostVariation {
@@ -57,7 +53,6 @@ const BookCreator = () => {
   const [loadingStates, setLoadingStates] = useState<Record<string, {
     isGeneratingImage: boolean;
     isEditingImage: boolean;
-    isGeneratingVideo: boolean;
   }>>({});
 
   useEffect(() => {
@@ -88,12 +83,9 @@ const BookCreator = () => {
       id: `post-${entry.id}`,
       planEntry: entry,
       imageBase64: null,
-      videoBase64: null,
-      videoJobId: null,
-      videoStatus: "idle" as const,
       caption: "",
       prompt: "",
-      selectedVariation: 0, // Auto-select for compatibility
+      selectedVariation: 0,
       variations: [{
         id: `var-${entry.id}`,
         caption: "",
@@ -104,9 +96,9 @@ const BookCreator = () => {
     }));
 
     // Initialize loading states
-    const states: Record<string, { isGeneratingImage: boolean; isEditingImage: boolean; isGeneratingVideo: boolean }> = {};
+    const states: Record<string, { isGeneratingImage: boolean; isEditingImage: boolean }> = {};
     posts.forEach((p) => {
-      states[p.id] = { isGeneratingImage: false, isEditingImage: false, isGeneratingVideo: false };
+      states[p.id] = { isGeneratingImage: false, isEditingImage: false };
     });
     setLoadingStates(states);
 
@@ -196,7 +188,7 @@ const BookCreator = () => {
 
       toast({
         title: "Image generated!",
-        description: "Your AI image is ready. You can edit it or upgrade to video.",
+        description: "Your AI image is ready. You can edit it if needed.",
       });
     } catch (error) {
       console.error("Error generating image:", error);
@@ -252,147 +244,6 @@ const BookCreator = () => {
         ...prev,
         [postId]: { ...prev[postId], isEditingImage: false },
       }));
-    }
-  };
-
-  const handleGenerateVideo = async (
-    postId: string,
-    prompt: string,
-    options?: { withoutStartingImage?: boolean }
-  ) => {
-    const post = generatedPosts.find((p) => p.id === postId);
-    const withoutStartingImage = options?.withoutStartingImage ?? false;
-
-    setLoadingStates((prev) => ({
-      ...prev,
-      [postId]: { ...prev[postId], isGeneratingVideo: true },
-    }));
-
-    setGeneratedPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, videoStatus: "generating" as const } : p))
-    );
-
-    // Build rich context for video generation
-    const influencerContext = creator
-      ? {
-          name: creator.name,
-          handle: creator.handle,
-          niche: creator.niche,
-          bio: creator.bio,
-          instagramUrl: `https://www.instagram.com/${creator.handle.replace("@", "")}/`,
-        }
-      : null;
-
-    const productContext = productData
-      ? {
-          name: productData.name,
-          description: productData.description,
-          categories: productData.categories,
-        }
-      : null;
-
-    const productImageBase64 = productData?.images?.[0]
-      ? productData.images[0].replace(/^data:image\/[^;]+;base64,/, "")
-      : null;
-
-    // IMPORTANT: For image-to-video, Sora requires the starting frame to match the requested size (1280x720)
-    // so we crop/pad it client-side before sending it to the backend function.
-    const soraInput =
-      !withoutStartingImage && post?.imageBase64
-        ? await prepareSoraInputReference(post.imageBase64, { width: 1280, height: 720 })
-        : null;
-
-    try {
-      const result = await callGenerateContent("generate-video", {
-        prompt,
-        imageBase64: soraInput?.base64 ?? null,
-        imageMime: soraInput?.mime ?? null,
-        seconds: "4",
-        influencer: influencerContext,
-        product: productContext,
-        productImageBase64,
-        productUrl: post?.planEntry.productUrl || "",
-      });
-
-      setGeneratedPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId ? { ...p, videoJobId: result.jobId, videoStatus: "generating" as const } : p
-        )
-      );
-
-      toast({
-        title: "Video generation started!",
-        description: withoutStartingImage
-          ? "Generating a fallback video without the starting image (this can avoid image-based moderation blocks)."
-          : "This may take a few minutes. We'll check the status automatically.",
-      });
-    } catch (error) {
-      console.error("Error generating video:", error);
-      setGeneratedPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, videoStatus: "failed" as const } : p)));
-      toast({
-        title: "Video generation failed",
-        description: error instanceof Error ? error.message : "Failed to generate video",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingStates((prev) => ({
-        ...prev,
-        [postId]: { ...prev[postId], isGeneratingVideo: false },
-      }));
-    }
-  };
-
-  const handleCheckVideoStatus = async (postId: string) => {
-    const post = generatedPosts.find((p) => p.id === postId);
-    if (!post?.videoJobId) return;
-
-    try {
-      const statusResult = await callGenerateContent("video-status", {
-        jobId: post.videoJobId,
-      });
-
-      if (statusResult.status === "completed") {
-        // Download the video
-        const downloadResult = await callGenerateContent("download-video", {
-          jobId: post.videoJobId,
-        });
-
-        setGeneratedPosts((prev) =>
-          prev.map((p) =>
-            p.id === postId
-              ? { ...p, videoBase64: downloadResult.videoBase64, videoStatus: "completed" as const }
-              : p
-          )
-        );
-
-        toast({
-          title: "Video ready!",
-          description: "Your video has been generated successfully.",
-        });
-      } else if (statusResult.status === "failed") {
-        setGeneratedPosts((prev) =>
-          prev.map((p) =>
-            p.id === postId ? { ...p, videoStatus: "failed" as const, videoJobId: null } : p
-          )
-        );
-
-        const isModerationBlocked =
-          statusResult.error?.code === "moderation_blocked" ||
-          String(statusResult.error?.message || "").toLowerCase().includes("moderation");
-
-        const code = statusResult.error?.code ? String(statusResult.error.code) : "";
-        const reason = statusResult.error?.message || statusResult.failure_reason || "Unknown error";
-
-        toast({
-          title: "Video generation failed",
-          description: isModerationBlocked
-            ? `Blocked by moderation${code ? ` (code: ${code})` : ""}. This can happen even with an empty prompt (e.g. ".") if the starting image triggers moderation. Use "Retry without image" to generate a fallback video without the starting frame.`
-            : `Failed: ${reason}. Please retry.`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error checking video status:", error);
     }
   };
 
@@ -508,7 +359,7 @@ const BookCreator = () => {
                   Generate Your Content
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Generate an AI image for each post. Edit it until you're happy, then optionally upgrade to video.
+                  Generate an AI image for each post. Edit it until you're happy.
                 </p>
               </div>
 
@@ -519,18 +370,13 @@ const BookCreator = () => {
                     entry={post.planEntry}
                     index={index}
                     imageBase64={post.imageBase64}
-                    videoBase64={post.videoBase64}
-                    videoStatus={post.videoStatus}
                     caption={post.caption}
                     isGeneratingImage={loadingStates[post.id]?.isGeneratingImage || false}
                     isEditingImage={loadingStates[post.id]?.isEditingImage || false}
-                    isGeneratingVideo={loadingStates[post.id]?.isGeneratingVideo || false}
                     influencerId={creator.id}
                     onGenerateImage={(prompt) => handleGenerateImage(post.id, prompt)}
                     onEditImage={(prompt) => handleEditImage(post.id, prompt)}
-                    onGenerateVideo={(prompt, options) => handleGenerateVideo(post.id, prompt, options)}
                     onUpdateCaption={(caption) => handleUpdateCaption(post.id, caption)}
-                    onCheckVideoStatus={() => handleCheckVideoStatus(post.id)}
                   />
                 ))}
               </div>

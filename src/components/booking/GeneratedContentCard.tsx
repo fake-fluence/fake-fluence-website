@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Image,
-  Video,
   MessageSquare,
   RefreshCw,
   Pencil,
@@ -14,10 +13,7 @@ import {
   Check,
   Loader2,
   Sparkles,
-  Play,
-  Film,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { ContentPlanEntry } from "@/components/booking/ContentPlanForm";
 import PublishToInstagramButton from "@/components/booking/PublishToInstagramButton";
@@ -26,18 +22,13 @@ interface GeneratedContentCardProps {
   entry: ContentPlanEntry;
   index: number;
   imageBase64: string | null;
-  videoBase64: string | null;
-  videoStatus: "idle" | "generating" | "completed" | "failed";
   caption: string;
   isGeneratingImage: boolean;
   isEditingImage: boolean;
-  isGeneratingVideo: boolean;
   influencerId?: string;
   onGenerateImage: (prompt: string) => void;
   onEditImage: (editPrompt: string) => void;
-  onGenerateVideo: (prompt: string, options?: { withoutStartingImage?: boolean }) => void;
   onUpdateCaption: (caption: string) => void;
-  onCheckVideoStatus: () => void;
 }
 
 const platformColors: Record<string, string> = {
@@ -50,41 +41,24 @@ const GeneratedContentCard = ({
   entry,
   index,
   imageBase64,
-  videoBase64,
-  videoStatus,
   caption,
   isGeneratingImage,
   isEditingImage,
-  isGeneratingVideo,
   influencerId,
   onGenerateImage,
   onEditImage,
-  onGenerateVideo,
   onUpdateCaption,
-  onCheckVideoStatus,
 }: GeneratedContentCardProps) => {
   const { t } = useLanguage();
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editedCaption, setEditedCaption] = useState(caption);
   const [showImageEdit, setShowImageEdit] = useState(false);
   const [imageEditPrompt, setImageEditPrompt] = useState("");
-  const [showVideoPrompt, setShowVideoPrompt] = useState(false);
-  const [videoPrompt, setVideoPrompt] = useState("");
 
   // Update editedCaption when caption prop changes
   useEffect(() => {
     setEditedCaption(caption);
   }, [caption]);
-
-  // Poll for video status when generating
-  useEffect(() => {
-    if (videoStatus === "generating") {
-      const interval = setInterval(() => {
-        onCheckVideoStatus();
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [videoStatus, onCheckVideoStatus]);
 
   const handleSaveCaption = () => {
     onUpdateCaption(editedCaption);
@@ -102,14 +76,6 @@ const GeneratedContentCard = ({
       setImageEditPrompt("");
       setShowImageEdit(false);
     }
-  };
-
-  const handleGenerateVideo = () => {
-    // Let users send a truly-empty prompt; backend will substitute the smallest safe placeholder.
-    const prompt = videoPrompt.trim();
-    onGenerateVideo(prompt);
-    setVideoPrompt("");
-    setShowVideoPrompt(false);
   };
 
   const buildInitialPrompt = () => {
@@ -152,7 +118,7 @@ const GeneratedContentCard = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Image/Video Display Area */}
+        {/* Image Display Area */}
         <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden border">
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 z-10">
@@ -163,13 +129,7 @@ const GeneratedContentCard = ({
             </div>
           )}
 
-          {videoBase64 ? (
-            <video
-              src={`data:video/mp4;base64,${videoBase64}`}
-              controls
-              className="w-full h-full object-cover"
-            />
-          ) : imageBase64 ? (
+          {imageBase64 ? (
             <img
               src={`data:image/png;base64,${imageBase64}`}
               alt="Generated content"
@@ -193,7 +153,7 @@ const GeneratedContentCard = ({
         </div>
 
         {/* Image Actions */}
-        {imageBase64 && !videoBase64 && (
+        {imageBase64 && (
           <div className="space-y-3">
             {/* Edit Image */}
             {!showImageEdit ? (
@@ -246,98 +206,6 @@ const GeneratedContentCard = ({
                 </div>
               </div>
             )}
-
-            {/* Upgrade to Video */}
-            <div className="pt-2 border-t">
-              {videoStatus === "idle" && !showVideoPrompt && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setShowVideoPrompt(true)}
-                  disabled={isLoading}
-                >
-                  <Film className="w-4 h-4 mr-2" />
-                  Upgrade to Video
-                </Button>
-              )}
-
-              {showVideoPrompt && (videoStatus === "idle" || videoStatus === "failed") && (
-                <div className="space-y-2 p-3 bg-muted/30 rounded-lg border">
-                  <p className="text-xs font-medium text-foreground">
-                    Describe the video motion (optional):
-                  </p>
-                  <Input
-                    placeholder="e.g., Slow zoom in, particles floating..."
-                    value={videoPrompt}
-                    onChange={(e) => setVideoPrompt(e.target.value)}
-                    className="text-sm"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleGenerateVideo}
-                      disabled={isGeneratingVideo}
-                    >
-                      <Video className="w-4 h-4 mr-2" />
-                      Generate Video
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setShowVideoPrompt(false)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {videoStatus === "generating" && (
-                <div className="flex items-center justify-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-sm text-primary">
-                    Generating video... This may take a few minutes
-                  </span>
-                </div>
-              )}
-
-              {videoStatus === "failed" && !showVideoPrompt && (
-                <div className="flex flex-col gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-                  <span className="text-sm text-destructive">
-                    Video generation failed. Please try again.
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setShowVideoPrompt(true)}
-                    >
-                      Retry
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => onGenerateVideo("", { withoutStartingImage: true })}
-                      disabled={isGeneratingVideo}
-                      title="Generate a fallback video without using the starting image (may avoid image-based moderation blocks)"
-                    >
-                      Retry without image
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Video actions */}
-        {videoBase64 && (
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="gap-1">
-              <Play className="w-3 h-3" />
-              Video Ready
-            </Badge>
           </div>
         )}
 
