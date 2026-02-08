@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import InstagramConnectDialog from "@/components/booking/InstagramConnectDialog";
+
 
 type BookingStep = "plan" | "review" | "confirmed";
 
@@ -308,10 +308,6 @@ const BookCreator = () => {
                   {creator.handle} • {creator.niche}
                 </p>
               </div>
-              <InstagramConnectDialog
-                influencerId={creator.id}
-                influencerName={creator.name}
-              />
             </div>
           </div>
 

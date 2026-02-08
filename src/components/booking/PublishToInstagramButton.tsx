@@ -50,7 +50,7 @@ const PublishToInstagramButton = ({
       if (!creds.connected) {
         toast({
           title: "Instagram not connected",
-          description: "Please connect the Instagram account first using the Connect Instagram button.",
+          description: "This influencer's Instagram account has not been connected yet. Please contact the admin.",
           variant: "destructive",
         });
         return;
