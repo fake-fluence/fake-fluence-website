@@ -56,6 +56,18 @@ export interface TranslationKeys {
     "post-description": string;
     video: string;
   };
+  profile: {
+    location: string;
+    age: string;
+    bio: string;
+    languages: string;
+    memberSince: string;
+    stats: string;
+    pricing: string;
+    bookNow: string;
+    close: string;
+    yearsOld: string;
+  };
   influencer: {
     followers: string;
     engagement: string;
@@ -256,6 +268,19 @@ export const en: TranslationKeys = {
   // Footer
   footer: {
     copyright: "© 2026 InfluenceAI. All AI personas are fictional.",
+  },
+
+  profile: {
+    location: "Location",
+    age: "Age",
+    bio: "About",
+    languages: "Languages",
+    memberSince: "Member since",
+    stats: "Platform Stats",
+    pricing: "Content Pricing",
+    bookNow: "Book Now",
+    close: "Close",
+    yearsOld: "years old",
   },
 
   // Influencer Card
