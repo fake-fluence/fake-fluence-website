@@ -312,16 +312,17 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   // If we have a generated image, pass it as the starting frame so Sora
   // animates the exact same AI person instead of generating a new one
+  // Sora requires size to always be set; input_reference image must match this resolution
+  formData.append("size", "1280x720");
+
+  // If we have a generated image, pass it as input_reference (starting frame)
+  // so Sora animates the exact same AI person from the image
   if (imageBase64) {
-    console.log("Attaching generated image as starting frame for Sora (image-to-video)");
+    console.log("Attaching generated image as input_reference for Sora (image-to-video)");
     
-    // Resize conceptually: Sora needs 1280x720 but we send the image and let it handle scaling
     const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
     const imageBlob = new Blob([imageBytes], { type: "image/png" });
-    formData.append("image", imageBlob, "starting-frame.png");
-    // When using image input, don't force a size — let Sora derive it from the image aspect ratio
-  } else {
-    formData.append("size", "1280x720");
+    formData.append("input_reference", imageBlob, "starting-frame.png");
   }
 
   console.log("Sending video request to Sora API (multipart/form-data), image-to-video:", !!imageBase64);
