@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { ContentPlanEntry } from "@/components/booking/ContentPlanForm";
+import PublishToInstagramButton from "@/components/booking/PublishToInstagramButton";
 
 interface GeneratedContentCardProps {
   entry: ContentPlanEntry;
@@ -31,6 +32,7 @@ interface GeneratedContentCardProps {
   isGeneratingImage: boolean;
   isEditingImage: boolean;
   isGeneratingVideo: boolean;
+  influencerId?: string;
   onGenerateImage: (prompt: string) => void;
   onEditImage: (editPrompt: string) => void;
   onGenerateVideo: (prompt: string) => void;
@@ -54,6 +56,7 @@ const GeneratedContentCard = ({
   isGeneratingImage,
   isEditingImage,
   isGeneratingVideo,
+  influencerId,
   onGenerateImage,
   onEditImage,
   onGenerateVideo,
@@ -323,6 +326,18 @@ const GeneratedContentCard = ({
               <Play className="w-3 h-3" />
               Video Ready
             </Badge>
+          </div>
+        )}
+
+        {/* Publish to Instagram */}
+        {imageBase64 && entry.platform === "Instagram" && influencerId && (
+          <div className="pt-2 border-t">
+            <PublishToInstagramButton
+              influencerId={influencerId}
+              imageBase64={imageBase64}
+              caption={caption}
+              disabled={isLoading}
+            />
           </div>
         )}
 

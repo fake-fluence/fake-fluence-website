@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-content]
 verify_jwt = false
+
+[functions.instagram-api]
+verify_jwt = false

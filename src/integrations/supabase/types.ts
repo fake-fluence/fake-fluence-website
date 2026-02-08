@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      instagram_credentials: {
+        Row: {
+          access_token_encrypted: string | null
+          created_at: string
+          id: string
+          influencer_id: string
+          instagram_user_id: string | null
+          instagram_username: string | null
+          page_access_token_encrypted: string | null
+          page_id: string | null
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          created_at?: string
+          id?: string
+          influencer_id: string
+          instagram_user_id?: string | null
+          instagram_username?: string | null
+          page_access_token_encrypted?: string | null
+          page_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          created_at?: string
+          id?: string
+          influencer_id?: string
+          instagram_user_id?: string | null
+          instagram_username?: string | null
+          page_access_token_encrypted?: string | null
+          page_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
