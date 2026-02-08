@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type Influencer, type Platform, type ContentType, contentTypeLabels, platformLabels } from "@/data/influencers";
+import { type Influencer, type Platform, type ContentType, contentTypeLabels, platformLabels, getDisplayHandle } from "@/data/influencers";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Link } from "react-router-dom";
 import {
@@ -72,7 +72,7 @@ const InfluencerProfileDialog = ({ influencer, open, onOpenChange }: InfluencerP
               )}
             </div>
             <p className="text-sm text-muted-foreground font-body drop-shadow-md">
-              {influencer.handle}
+              {getDisplayHandle(influencer, selectedPlatform)}
             </p>
           </div>
         </div>

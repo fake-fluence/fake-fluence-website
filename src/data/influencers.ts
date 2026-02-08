@@ -48,7 +48,9 @@ export interface PlatformData {
 export interface Influencer {
   id: string;
   name: string;
-  handle: string;
+  handle: string; // Instagram handle (primary)
+  tiktokHandle: string;
+  linkedinName: string;
   category: Category;
   niche: string;
   verified: boolean;
@@ -58,6 +60,19 @@ export interface Influencer {
   languages: string[];
   joinedYear: number;
   platforms: Record<Platform, PlatformData>;
+}
+
+/** Returns the appropriate display handle/name for a given platform */
+export function getDisplayHandle(influencer: Influencer, platform: Platform): string {
+  switch (platform) {
+    case "tiktok":
+      return influencer.tiktokHandle;
+    case "linkedin":
+      return influencer.linkedinName;
+    case "instagram":
+    default:
+      return influencer.handle;
+  }
 }
 
 export const contentTypeLabels: Record<ContentType, string> = {
@@ -77,6 +92,8 @@ export const influencers: Influencer[] = [
     id: "1",
     name: "Sophia Luxe",
     handle: "@sophia.luxe",
+    tiktokHandle: "@sophia.luxe",
+    linkedinName: "Sophia Luxe",
     category: "women",
     niche: "Fashion & Lifestyle",
     verified: true,
@@ -119,6 +136,8 @@ export const influencers: Influencer[] = [
     id: "2",
     name: "Aria Golden",
     handle: "@aria.golden",
+    tiktokHandle: "@aria.golden",
+    linkedinName: "Aria Golden",
     category: "women",
     niche: "Beauty & Travel",
     verified: true,
@@ -161,6 +180,8 @@ export const influencers: Influencer[] = [
     id: "3",
     name: "Marcus Titan",
     handle: "@marcus.titan",
+    tiktokHandle: "@marcus.titan",
+    linkedinName: "Marcus Titan",
     category: "men",
     niche: "Fitness & Motivation",
     verified: true,
@@ -203,6 +224,8 @@ export const influencers: Influencer[] = [
     id: "4",
     name: "Diego Flex",
     handle: "@diego.flex_",
+    tiktokHandle: "@diego.flex_",
+    linkedinName: "Diego Flex",
     category: "men",
     niche: "Fitness & Wellness",
     verified: false,
@@ -245,6 +268,8 @@ export const influencers: Influencer[] = [
     id: "5",
     name: "Buddy Paws",
     handle: "@buddy.paws",
+    tiktokHandle: "@buddypaws",
+    linkedinName: "Buddy Paws",
     category: "pets",
     niche: "Pet Life & Products",
     verified: true,
@@ -287,6 +312,8 @@ export const influencers: Influencer[] = [
     id: "6",
     name: "Whiskers Co",
     handle: "@whiskers.co",
+    tiktokHandle: "@whiskers.co",
+    linkedinName: "Whiskers Co",
     category: "pets",
     niche: "Cat Content & Reviews",
     verified: true,
@@ -329,6 +356,8 @@ export const influencers: Influencer[] = [
     id: "7",
     name: "Elena Vibe",
     handle: "@elena.vibe",
+    tiktokHandle: "@elena.vibe",
+    linkedinName: "Elena Vibe",
     category: "women",
     niche: "Travel & Lifestyle",
     verified: false,
@@ -371,6 +400,8 @@ export const influencers: Influencer[] = [
     id: "8",
     name: "Nova Style",
     handle: "@nova.style",
+    tiktokHandle: "@nova.style",
+    linkedinName: "Nova Style",
     category: "other",
     niche: "Fashion & Editorial",
     verified: true,

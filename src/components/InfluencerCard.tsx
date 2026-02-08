@@ -1,4 +1,4 @@
-import { type Influencer, contentTypeLabels, type ContentType, type Platform, platformLabels } from "@/data/influencers";
+import { type Influencer, contentTypeLabels, type ContentType, type Platform, platformLabels, getDisplayHandle } from "@/data/influencers";
 import { BadgeCheck, Heart, Users, Eye, ShoppingCart, Instagram, Linkedin, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -66,7 +66,7 @@ const InfluencerCard = ({ influencer, index, showFullPricing = false }: Influenc
           </div>
           
           <p className="text-sm text-muted-foreground font-body mb-3">
-            {influencer.handle}
+            {getDisplayHandle(influencer, selectedPlatform)}
           </p>
           <p className="text-xs text-primary font-body font-medium mb-4">
             {t.niches[influencer.niche] || influencer.niche}
