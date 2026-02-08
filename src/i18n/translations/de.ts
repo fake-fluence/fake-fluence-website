@@ -95,13 +95,13 @@ export const de: TranslationKeys = {
     book: "Buchen",
     steps: {
       plan: "Content-Plan",
-      review: "Varianten prüfen",
+      review: "Beitrag prüfen",
       confirmed: "Bestätigt",
     },
     contentPlan: {
       title: "Content-Plan",
       description:
-        "Definieren Sie die Beiträge, die der Creator erstellen soll. Wir generieren Varianten für jeden.",
+        "Definieren Sie die Beiträge, die der Creator erstellen soll. Wir generieren Inhalte für jeden.",
       addPost: "Beitrag hinzufügen",
       post: "Beitrag",
       postType: "Beitragstyp / Absicht",
@@ -114,8 +114,8 @@ export const de: TranslationKeys = {
       designElementsHint: "(optional)",
       designElementsPlaceholder:
         "z.B. Sprechernamen, Preisankündigungen, bestimmte Bilder, Markenfarben...",
-      generate: "Post-Varianten generieren",
-      generating: "Varianten werden generiert...",
+      generate: "Beitrag generieren",
+      generating: "Beitrag wird generiert...",
       postTypes: {
         announceProduct: "Neues Produkt ankündigen",
         promoteHackathon: "Hackathon bewerben",
