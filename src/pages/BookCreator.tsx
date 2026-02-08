@@ -11,6 +11,7 @@ import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import InstagramConnectDialog from "@/components/booking/InstagramConnectDialog";
+import { prepareSoraInputReference } from "@/lib/image/prepareSoraInputReference";
 
 type BookingStep = "plan" | "review" | "confirmed";
 
@@ -269,28 +270,39 @@ const BookCreator = () => {
     );
 
     // Build rich context for video generation
-    const influencerContext = creator ? {
-      name: creator.name,
-      handle: creator.handle,
-      niche: creator.niche,
-      bio: creator.bio,
-      instagramUrl: `https://www.instagram.com/${creator.handle.replace("@", "")}/`,
-    } : null;
+    const influencerContext = creator
+      ? {
+          name: creator.name,
+          handle: creator.handle,
+          niche: creator.niche,
+          bio: creator.bio,
+          instagramUrl: `https://www.instagram.com/${creator.handle.replace("@", "")}/`,
+        }
+      : null;
 
-    const productContext = productData ? {
-      name: productData.name,
-      description: productData.description,
-      categories: productData.categories,
-    } : null;
+    const productContext = productData
+      ? {
+          name: productData.name,
+          description: productData.description,
+          categories: productData.categories,
+        }
+      : null;
 
     const productImageBase64 = productData?.images?.[0]
       ? productData.images[0].replace(/^data:image\/[^;]+;base64,/, "")
       : null;
 
+    // IMPORTANT: Sora requires the starting frame to match the requested size (1280x720)
+    // so we crop/pad it client-side before sending it to the backend function.
+    const soraInput = post?.imageBase64
+      ? await prepareSoraInputReference(post.imageBase64, { width: 1280, height: 720 })
+      : null;
+
     try {
       const result = await callGenerateContent("generate-video", {
         prompt,
-        imageBase64: post?.imageBase64,
+        imageBase64: soraInput?.base64 ?? null,
+        imageMime: soraInput?.mime ?? null,
         seconds: "4",
         influencer: influencerContext,
         product: productContext,
