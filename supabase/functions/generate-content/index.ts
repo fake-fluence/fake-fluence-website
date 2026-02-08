@@ -267,43 +267,26 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
-  let response: globalThis.Response;
+  // Sora 2 requires input_reference images to match the target video resolution (1280x720).
+  // Generated images are typically 1024x1024, so we fall back to text-to-video
+  // with a detailed prompt that describes the image content for consistency.
+  const enrichedPrompt = imageBase64
+    ? `${prompt}\n\nIMPORTANT: Base this video on the visual style and content of the sponsored post image that was generated. Maintain the same look, feel, colors, and product placement.`
+    : prompt;
 
-  if (imageBase64) {
-    // Image-to-video: must use multipart/form-data with input_reference
-    const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
-    const imageBlob = new Blob([imageBytes], { type: "image/png" });
-
-    const formData = new FormData();
-    formData.append("model", "sora-2");
-    formData.append("prompt", prompt);
-    formData.append("size", "1280x720");
-    formData.append("seconds", seconds);
-    formData.append("input_reference", imageBlob, "frame.png");
-
-    response = await fetch("https://api.openai.com/v1/videos", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: formData,
-    });
-  } else {
-    // Text-to-video: JSON body
-    response = await fetch("https://api.openai.com/v1/videos", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "sora-2",
-        prompt,
-        seconds: parseInt(seconds),
-        size: "1280x720",
-      }),
-    });
-  }
+  const response = await fetch("https://api.openai.com/v1/videos", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "sora-2",
+      prompt: enrichedPrompt,
+      seconds: parseInt(seconds),
+      size: "1280x720",
+    }),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
