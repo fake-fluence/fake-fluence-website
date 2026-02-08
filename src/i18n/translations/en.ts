@@ -115,7 +115,7 @@ export interface TranslationKeys {
       platforms: {
         linkedin: string;
         instagram: string;
-        both: string;
+        tiktok: string;
       };
     };
     variations: {
@@ -336,7 +336,7 @@ export const en: TranslationKeys = {
       platforms: {
         linkedin: "LinkedIn",
         instagram: "Instagram",
-        both: "Both Platforms",
+        tiktok: "TikTok",
       },
     },
     variations: {

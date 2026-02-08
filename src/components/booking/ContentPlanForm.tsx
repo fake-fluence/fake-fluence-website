@@ -11,13 +11,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Sparkles, Loader2, Linkedin, Instagram } from "lucide-react";
+import { Plus, Trash2, Sparkles, Loader2, Linkedin, Instagram, Music } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export interface ContentPlanEntry {
   id: string;
   postType: string;
-  platform: "LinkedIn" | "Instagram" | "Both";
+  platform: "LinkedIn" | "Instagram" | "TikTok";
   constraints: string;
   designElements: string;
 }
@@ -33,7 +33,7 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
     {
       id: crypto.randomUUID(),
       postType: "",
-      platform: "Both",
+      platform: "Instagram",
       constraints: "",
       designElements: "",
     },
@@ -53,7 +53,7 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
       {
         id: crypto.randomUUID(),
         postType: "",
-        platform: "Both",
+        platform: "Instagram",
         constraints: "",
         designElements: "",
       },
@@ -180,36 +180,32 @@ const ContentPlanForm = ({ onSubmit, isGenerating }: ContentPlanFormProps) => {
                               {t.booking.contentPlan.platforms.instagram}
                             </>
                           )}
-                          {entry.platform === "Both" && (
+                          {entry.platform === "TikTok" && (
                             <>
-                              <span className="flex items-center gap-1">
-                                <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-                                <Instagram className="w-4 h-4 text-[#E4405F]" />
-                              </span>
-                              {t.booking.contentPlan.platforms.both}
+                              <Music className="w-4 h-4 text-foreground" />
+                              {t.booking.contentPlan.platforms.tiktok}
                             </>
                           )}
                         </span>
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="LinkedIn">
-                        <span className="flex items-center gap-2">
-                          <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-                          {t.booking.contentPlan.platforms.linkedin}
-                        </span>
-                      </SelectItem>
                       <SelectItem value="Instagram">
                         <span className="flex items-center gap-2">
                           <Instagram className="w-4 h-4 text-[#E4405F]" />
                           {t.booking.contentPlan.platforms.instagram}
                         </span>
                       </SelectItem>
-                      <SelectItem value="Both">
+                      <SelectItem value="LinkedIn">
                         <span className="flex items-center gap-2">
                           <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-                          <Instagram className="w-4 h-4 text-[#E4405F]" />
-                          {t.booking.contentPlan.platforms.both}
+                          {t.booking.contentPlan.platforms.linkedin}
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="TikTok">
+                        <span className="flex items-center gap-2">
+                          <Music className="w-4 h-4" />
+                          {t.booking.contentPlan.platforms.tiktok}
                         </span>
                       </SelectItem>
                     </SelectContent>

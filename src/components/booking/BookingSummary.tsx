@@ -36,11 +36,10 @@ const BookingSummary = ({
     let total = 0;
     posts.forEach((post) => {
       if (post.selectedVariation !== null) {
-        // Base price per post (using post-description pricing)
-        const basePrice = creator.platforms.instagram.pricing["post-description"];
-        // Double for both platforms
-        const multiplier = post.planEntry.platform === "Both" ? 2 : 1;
-        total += basePrice * multiplier;
+        // Get the platform-specific pricing
+        const platform = post.planEntry.platform.toLowerCase() as "instagram" | "linkedin" | "tiktok";
+        const basePrice = creator.platforms[platform].pricing["post-description"];
+        total += basePrice;
       }
     });
     return total;
@@ -82,8 +81,8 @@ const BookingSummary = ({
             {posts.map((post) => {
               if (post.selectedVariation === null) return null;
               const variation = post.variations[post.selectedVariation];
-              const price = creator.platforms.instagram.pricing["post-description"];
-              const multiplier = post.planEntry.platform === "Both" ? 2 : 1;
+              const platform = post.planEntry.platform.toLowerCase() as "instagram" | "linkedin" | "tiktok";
+              const price = creator.platforms[platform].pricing["post-description"];
 
               return (
                 <div
@@ -102,7 +101,7 @@ const BookingSummary = ({
                     </div>
                   </div>
                   <span className="text-sm font-medium">
-                    ${price * multiplier}
+                    ${price}
                   </span>
                 </div>
               );
