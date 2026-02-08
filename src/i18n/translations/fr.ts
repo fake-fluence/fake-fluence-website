@@ -62,7 +62,7 @@ export const fr: TranslationKeys = {
     },
   },
   footer: {
-    copyright: "© 2026 InfluenceAI. Tous les personas IA sont fictifs.",
+    copyright: "© 2026 FakeFluence. Tous les personas IA sont fictifs.",
   },
   profile: {
     location: "Localisation",

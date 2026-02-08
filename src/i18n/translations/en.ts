@@ -267,7 +267,7 @@ export const en: TranslationKeys = {
 
   // Footer
   footer: {
-    copyright: "© 2026 InfluenceAI. All AI personas are fictional.",
+    copyright: "© 2026 FakeFluence. All AI personas are fictional.",
   },
 
   profile: {

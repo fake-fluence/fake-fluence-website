@@ -12,7 +12,7 @@ const Footer = () => {
           <Link to="/" className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="font-display text-lg font-bold text-gradient-gold">
-              InfluenceAI
+              FakeFluence
             </span>
           </Link>
           <p className="text-sm text-muted-foreground font-body">
