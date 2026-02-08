@@ -272,28 +272,19 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
-  // Build a simple, moderation-friendly prompt
-  // Key: emphasize this is AI-generated artwork, keep it short and neutral
+  // Build a very minimal, moderation-friendly prompt.
+  // For image-to-video, the safest approach is to ask for subtle motion ONLY and to keep the scene unchanged.
   const parts: string[] = [];
 
-  // Lead with AI-generated disclaimer to help pass moderation
-  parts.push("This is an AI-generated digital artwork animation. All characters are fictional and computer-generated.");
+  parts.push(
+    "Animate the provided still image with subtle camera motion only. Keep the scene exactly the same. Do not add or remove people, objects, text, or logos."
+  );
 
-  if (imageBase64) {
-    // Image-to-video: animate the provided AI artwork
-    parts.push("Animate this AI-generated still image with subtle, natural motion.");
-  }
-
-  // Simple motion description
-  if (prompt) {
-    parts.push(`Motion: ${prompt}`);
+  // Keep user motion direction, but keep it optional and short.
+  if (prompt && prompt.trim()) {
+    parts.push(`Motion: ${prompt.trim().slice(0, 160)}`);
   } else {
-    parts.push("Gentle camera movement, soft lighting, cinematic quality.");
-  }
-
-  // Only add minimal product context if present
-  if (product) {
-    parts.push(`Scene includes: ${product.name}.`);
+    parts.push("Motion: gentle camera push-in.");
   }
 
   const finalPrompt = parts.join(" ");

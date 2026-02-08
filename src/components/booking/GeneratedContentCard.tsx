@@ -105,7 +105,9 @@ const GeneratedContentCard = ({
   };
 
   const handleGenerateVideo = () => {
-    const prompt = videoPrompt.trim() || `The influencer naturally holds and showcases the product, smiling at the camera with genuine enthusiasm. Slow, cinematic motion.`;
+    const prompt =
+      videoPrompt.trim() ||
+      "Subtle camera push-in with gentle parallax. Keep the scene unchanged. No new elements.";
     onGenerateVideo(prompt);
     setVideoPrompt("");
     setShowVideoPrompt(false);
