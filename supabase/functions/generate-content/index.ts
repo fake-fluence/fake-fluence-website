@@ -279,11 +279,9 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   parts.push("IMPORTANT: The person in this video is a completely fictional AI-generated character we designed. They are not a real person. Generate a video of this original fictional character.");
 
   if (influencer) {
-    // Describe characteristics that match the influencer's vibe without identifying a real person
     parts.push(`Our fictional character is a ${influencer.niche} content creator. They have a confident, charismatic presence typical of successful ${influencer.niche} influencers. Their visual style is authentic, polished, and lifestyle-oriented.`);
     
     if (influencer.bio) {
-      // Use bio details to inform the character's vibe without copying verbatim
       const nicheKeywords = influencer.bio.split(/[.,!]/).slice(0, 2).join(". ");
       parts.push(`Character vibe: ${nicheKeywords}.`);
     }
@@ -296,14 +294,12 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   parts.push("The video should look like an authentic sponsored social media clip — the character naturally holding or presenting the product with genuine enthusiasm. Natural lighting, lifestyle setting, smooth cinematic camera motion. The character should look directly at the camera at least once, smiling confidently.");
 
-  // Add the user's custom motion/direction prompt
   if (prompt) {
     parts.push(`Motion/direction: ${prompt}`);
   }
 
   if (imageBase64) {
-    console.log("Image provided — enriching prompt to match the generated image's composition.");
-    parts.push("CRITICAL: Match the visual appearance of the previously generated AI image as closely as possible — same fictional character (same face, hair, skin tone, build), same product, same setting and composition. Animate from that exact scene.");
+    parts.push("CRITICAL: This video MUST start from the provided image and animate it. The person in the image is our original fictional AI character. Keep their exact face, hair, skin tone, build, clothing, and pose. Animate them naturally from this starting frame — they should move, gesture, and present the product while maintaining their exact appearance from the image.");
   }
 
   const finalPrompt = parts.join("\n\n");
@@ -313,9 +309,22 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   formData.append("model", "sora-2");
   formData.append("prompt", finalPrompt);
   formData.append("seconds", String(seconds));
-  formData.append("size", "1280x720");
 
-  console.log("Sending video request to Sora API (multipart/form-data)");
+  // If we have a generated image, pass it as the starting frame so Sora
+  // animates the exact same AI person instead of generating a new one
+  if (imageBase64) {
+    console.log("Attaching generated image as starting frame for Sora (image-to-video)");
+    
+    // Resize conceptually: Sora needs 1280x720 but we send the image and let it handle scaling
+    const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
+    const imageBlob = new Blob([imageBytes], { type: "image/png" });
+    formData.append("image", imageBlob, "starting-frame.png");
+    // When using image input, don't force a size — let Sora derive it from the image aspect ratio
+  } else {
+    formData.append("size", "1280x720");
+  }
+
+  console.log("Sending video request to Sora API (multipart/form-data), image-to-video:", !!imageBase64);
 
   const response = await fetch("https://api.openai.com/v1/videos", {
     method: "POST",
@@ -332,7 +341,7 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   }
 
   const data = await response.json();
-  console.log("Video job created:", data.id);
+  console.log("Video job created:", data.id, "status:", data.status);
   
   return new Response(
     JSON.stringify({ jobId: data.id, status: data.status }),
