@@ -294,10 +294,6 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   parts.push("The video should look like an authentic sponsored content piece — the influencer naturally using, holding, or presenting the product with genuine enthusiasm. Natural lighting, lifestyle setting, NOT a studio ad.");
 
-  if (imageBase64) {
-    parts.push("IMPORTANT: Use the attached generated image as the visual reference for how the scene should look. Match the styling, person, product placement, and setting from that image.");
-  }
-
   // Add the user's custom motion/direction prompt
   if (prompt) {
     parts.push(`Motion/direction: ${prompt}`);
@@ -305,19 +301,45 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   const enrichedPrompt = parts.join("\n\n");
 
-  const response = await fetch("https://api.openai.com/v1/videos", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "sora-2",
-      prompt: enrichedPrompt,
-      seconds,
-      size: "1280x720",
-    }),
-  });
+  let response: globalThis.Response;
+
+  if (imageBase64) {
+    // Use multipart form data with image as input_reference (first frame)
+    const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
+    const imageBlob = new Blob([imageBytes], { type: "image/png" });
+
+    const formData = new FormData();
+    formData.append("model", "sora-2");
+    formData.append("prompt", enrichedPrompt);
+    formData.append("seconds", seconds);
+    formData.append("size", "1280x720");
+    formData.append("input_reference", imageBlob, "frame.png");
+
+    console.log("Sending video request with input_reference image");
+
+    response = await fetch("https://api.openai.com/v1/videos", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: formData,
+    });
+  } else {
+    // No image — use JSON request
+    response = await fetch("https://api.openai.com/v1/videos", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "sora-2",
+        prompt: enrichedPrompt,
+        seconds,
+        size: "1280x720",
+      }),
+    });
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
