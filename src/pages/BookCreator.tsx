@@ -359,9 +359,17 @@ const BookCreator = () => {
       } else if (statusResult.status === "failed") {
         setGeneratedPosts((prev) =>
           prev.map((p) =>
-            p.id === postId ? { ...p, videoStatus: "failed" as const } : p
+            p.id === postId ? { ...p, videoStatus: "failed" as const, videoJobId: null } : p
           )
         );
+        const reason = statusResult.error?.message || statusResult.failure_reason || "Unknown error";
+        toast({
+          title: "Video generation failed",
+          description: reason.includes("moderation") 
+            ? "Content was blocked by moderation. Try a simpler video prompt." 
+            : `Failed: ${reason}. Please retry.`,
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error checking video status:", error);

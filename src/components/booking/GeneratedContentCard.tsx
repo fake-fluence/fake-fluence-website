@@ -258,7 +258,7 @@ const GeneratedContentCard = ({
                 </Button>
               )}
 
-              {showVideoPrompt && videoStatus === "idle" && (
+              {showVideoPrompt && (videoStatus === "idle" || videoStatus === "failed") && (
                 <div className="space-y-2 p-3 bg-muted/30 rounded-lg border">
                   <p className="text-xs font-medium text-foreground">
                     Describe the video motion (optional):
@@ -298,7 +298,7 @@ const GeneratedContentCard = ({
                 </div>
               )}
 
-              {videoStatus === "failed" && (
+              {videoStatus === "failed" && !showVideoPrompt && (
                 <div className="flex items-center justify-center gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
                   <span className="text-sm text-destructive">
                     Video generation failed. Please try again.
