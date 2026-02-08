@@ -304,8 +304,38 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   let response: globalThis.Response;
 
   if (imageBase64) {
-    // Use multipart form data with image as input_reference (first frame)
-    const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
+    // The generated image is 1024x1024 but Sora requires input_reference to match
+    // the video size (1280x720). Resize via OpenAI image edit first.
+    console.log("Resizing image from 1024x1024 to 1280x720 for video input_reference");
+    
+    const origBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
+    const origBlob = new Blob([origBytes], { type: "image/png" });
+
+    const resizeForm = new FormData();
+    resizeForm.append("model", "gpt-image-1.5");
+    resizeForm.append("prompt", "Recreate this exact same image with the same content, people, products, and composition. Adapt it to a 16:9 landscape format. Keep everything identical — same person, same product, same style, same lighting.");
+    resizeForm.append("image", origBlob, "original.png");
+    resizeForm.append("size", "1536x1024");
+
+    const resizeResponse = await fetch("https://api.openai.com/v1/images/edits", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: resizeForm,
+    });
+
+    let resizedImageBase64 = imageBase64;
+    if (resizeResponse.ok) {
+      const resizeData = await resizeResponse.json();
+      if (resizeData.data?.[0]?.b64_json) {
+        resizedImageBase64 = resizeData.data[0].b64_json;
+        console.log("Image resized successfully for video");
+      }
+    } else {
+      console.warn("Image resize failed, falling back to text-only video generation");
+    }
+
+    // Now send to Sora with the resized image
+    const imageBytes = Uint8Array.from(atob(resizedImageBase64), (c) => c.charCodeAt(0));
     const imageBlob = new Blob([imageBytes], { type: "image/png" });
 
     const formData = new FormData();
