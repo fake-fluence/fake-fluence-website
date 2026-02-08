@@ -413,7 +413,7 @@ const BookCreator = () => {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex flex-col items-center gap-6 max-w-lg mx-auto">
                 {generatedPosts.map((post, index) => (
                   <GeneratedContentCard
                     key={post.id}
