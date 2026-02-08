@@ -34,6 +34,13 @@ export interface PostVariation {
   tone: string;
 }
 
+interface ProductData {
+  images: string[];
+  name: string;
+  description: string;
+  categories: string[];
+}
+
 const BookCreator = () => {
   const { creatorId } = useParams();
   const navigate = useNavigate();
@@ -44,6 +51,7 @@ const BookCreator = () => {
   const [contentPlan, setContentPlan] = useState<ContentPlanEntry[]>([]);
   const [generatedPosts, setGeneratedPosts] = useState<GeneratedPost[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [productData, setProductData] = useState<ProductData | null>(null);
   const [loadingStates, setLoadingStates] = useState<Record<string, {
     isGeneratingImage: boolean;
     isEditingImage: boolean;
@@ -57,6 +65,16 @@ const BookCreator = () => {
       return;
     }
     setCreator(found);
+
+    // Load product data from localStorage
+    try {
+      const stored = localStorage.getItem("bookingProductData");
+      if (stored) {
+        setProductData(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.warn("Failed to load product data from localStorage");
+    }
   }, [creatorId, navigate]);
 
   const handlePlanSubmit = async (entries: ContentPlanEntry[]) => {
@@ -123,28 +141,54 @@ const BookCreator = () => {
       [postId]: { ...prev[postId], isGeneratingImage: true },
     }));
 
+    const post = generatedPosts.find((p) => p.id === postId);
+
+    // Build rich context for the AI
+    const influencerContext = creator ? {
+      name: creator.name,
+      handle: creator.handle,
+      niche: creator.niche,
+      bio: creator.bio,
+      instagramUrl: `https://www.instagram.com/${creator.handle.replace("@", "")}/`,
+    } : null;
+
+    const productContext = productData ? {
+      name: productData.name,
+      description: productData.description,
+      categories: productData.categories,
+    } : null;
+
+    // Get product image base64 (strip the data:image/...;base64, prefix)
+    const productImageBase64 = productData?.images?.[0]
+      ? productData.images[0].replace(/^data:image\/[^;]+;base64,/, "")
+      : null;
+
     try {
       const result = await callGenerateContent("generate-image", {
         prompt,
         size: "1024x1024",
         quality: "high",
+        influencer: influencerContext,
+        product: productContext,
+        productImageBase64,
+        productUrl: post?.planEntry.productUrl || "",
       });
 
       setGeneratedPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId
+        prev.map((p) =>
+          p.id === postId
             ? {
-                ...post,
+                ...p,
                 imageBase64: result.imageBase64,
                 prompt,
-                caption: `✨ ${post.planEntry.postType}\n\n${post.planEntry.constraints || ""}`.trim(),
+                caption: `✨ ${p.planEntry.postType}\n\n${p.planEntry.constraints || ""}`.trim(),
                 variations: [{
-                  ...post.variations[0],
-                  caption: `✨ ${post.planEntry.postType}`,
+                  ...p.variations[0],
+                  caption: `✨ ${p.planEntry.postType}`,
                   imageDescription: prompt,
                 }],
               }
-            : post
+            : p
         )
       );
 

@@ -110,6 +110,10 @@ const GetStarted = () => {
   const handleSelectCreator = (influencer: Influencer, contentType: ContentType) => {
     setSelectedInfluencer(influencer);
     setSelectedContentType(contentType);
+    // Store product data for the booking page
+    if (productData) {
+      localStorage.setItem("bookingProductData", JSON.stringify(productData));
+    }
     setStep("preview");
   };
 
