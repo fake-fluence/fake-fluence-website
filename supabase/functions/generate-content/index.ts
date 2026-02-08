@@ -358,23 +358,40 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
           return { width: w >>> 0, height: h >>> 0 };
         }
 
-        // JPEG SOF markers
+        // JPEG SOF markers - scan properly
         if (mime === "image/jpeg" && imageBytes.length > 4 && imageBytes[0] === 0xff && imageBytes[1] === 0xd8) {
           let i = 2;
-          while (i < imageBytes.length) {
+          while (i + 1 < imageBytes.length) {
+            // Find next 0xFF marker
             if (imageBytes[i] !== 0xff) {
-              i += 1;
+              i++;
               continue;
             }
+            // Skip padding 0xFF bytes
+            while (i + 1 < imageBytes.length && imageBytes[i + 1] === 0xff) {
+              i++;
+            }
+            if (i + 1 >= imageBytes.length) break;
+            
             const marker = imageBytes[i + 1];
-            const length = (imageBytes[i + 2] << 8) | imageBytes[i + 3];
-            // SOF0, SOF1, SOF2, SOF3
-            if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2 || marker === 0xc3) {
+            
+            // SOF0-SOF3, SOF5-SOF7, SOF9-SOF11, SOF13-SOF15 contain dimensions
+            const isSOF =
+              (marker >= 0xc0 && marker <= 0xc3) ||
+              (marker >= 0xc5 && marker <= 0xc7) ||
+              (marker >= 0xc9 && marker <= 0xcb) ||
+              (marker >= 0xcd && marker <= 0xcf);
+              
+            if (isSOF && i + 9 < imageBytes.length) {
               const h = (imageBytes[i + 5] << 8) | imageBytes[i + 6];
               const w = (imageBytes[i + 7] << 8) | imageBytes[i + 8];
               return { width: w, height: h };
             }
-            if (!length) break;
+            
+            // Skip marker + length
+            if (i + 3 >= imageBytes.length) break;
+            const length = (imageBytes[i + 2] << 8) | imageBytes[i + 3];
+            if (length < 2) break;
             i += 2 + length;
           }
         }
