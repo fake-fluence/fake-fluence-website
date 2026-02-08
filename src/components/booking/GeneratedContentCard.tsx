@@ -102,7 +102,7 @@ const GeneratedContentCard = ({
   };
 
   const handleGenerateVideo = () => {
-    const prompt = videoPrompt.trim() || `Animate this image: ${entry.postType}`;
+    const prompt = videoPrompt.trim() || `The influencer naturally holds and showcases the product, smiling at the camera with genuine enthusiasm. Slow, cinematic motion.`;
     onGenerateVideo(prompt);
     setVideoPrompt("");
     setShowVideoPrompt(false);

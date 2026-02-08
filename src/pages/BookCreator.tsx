@@ -267,11 +267,34 @@ const BookCreator = () => {
       )
     );
 
+    // Build rich context for video generation
+    const influencerContext = creator ? {
+      name: creator.name,
+      handle: creator.handle,
+      niche: creator.niche,
+      bio: creator.bio,
+      instagramUrl: `https://www.instagram.com/${creator.handle.replace("@", "")}/`,
+    } : null;
+
+    const productContext = productData ? {
+      name: productData.name,
+      description: productData.description,
+      categories: productData.categories,
+    } : null;
+
+    const productImageBase64 = productData?.images?.[0]
+      ? productData.images[0].replace(/^data:image\/[^;]+;base64,/, "")
+      : null;
+
     try {
       const result = await callGenerateContent("generate-video", {
         prompt,
         imageBase64: post?.imageBase64,
         seconds: "4",
+        influencer: influencerContext,
+        product: productContext,
+        productImageBase64,
+        productUrl: post?.planEntry.productUrl || "",
       });
 
       setGeneratedPosts((prev) =>
