@@ -271,59 +271,49 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
-  // Build a rich prompt that creates a realistic sponsored video
+  // Build a rich prompt — avoid mentioning real people by name/handle to prevent moderation blocks
   const parts: string[] = [];
 
-  parts.push("Create a realistic, cinematic sponsored social media video.");
+  parts.push("Create a realistic, cinematic sponsored social media video featuring a content creator.");
 
   if (influencer) {
-    parts.push(`This video features the real person behind the public account ${influencer.handle} (${influencer.name}), a ${influencer.niche} influencer.`);
-    parts.push(`Look up the public persona of ${influencer.handle} on Instagram (${influencer.instagramUrl}) and accurately depict this real person in the video.`);
-    parts.push(`Their bio: ${influencer.bio}`);
-    parts.push("The person should look exactly like the real influencer — same face, same style, same vibe. This must be recognizable as them.");
+    // Describe the style/niche without naming a real person
+    parts.push(`The content creator is a ${influencer.niche} influencer with a style that is authentic and lifestyle-oriented.`);
   }
 
   if (product) {
-    parts.push(`The product being featured is "${product.name}": ${product.description}. Categories: ${product.categories.join(", ")}.`);
-    parts.push("The influencer should be visibly holding and showcasing THIS EXACT product in the video — not a generic item.");
+    parts.push(`The product being featured is a "${product.name}": ${product.description}.`);
+    parts.push("The person should be visibly holding and showcasing this product in the video.");
   }
 
-  if (productUrl) {
-    parts.push(`Product reference page: ${productUrl}`);
-  }
-
-  parts.push("The video should look like an authentic sponsored content piece — the influencer naturally using, holding, or presenting the product with genuine enthusiasm. Natural lighting, lifestyle setting, NOT a studio ad.");
+  parts.push("The video should look like an authentic sponsored content piece — a person naturally using, holding, or presenting the product with genuine enthusiasm. Natural lighting, lifestyle setting, smooth cinematic motion.");
 
   // Add the user's custom motion/direction prompt
   if (prompt) {
     parts.push(`Motion/direction: ${prompt}`);
   }
 
-  const enrichedPrompt = parts.join("\n\n");
-
-  // NOTE: Sora requires input_reference to exactly match the video resolution (e.g. 1280x720),
-  // but the generated images are 1024x1024. Since OpenAI's image API doesn't output 1280x720,
-  // we use text-only video generation and describe the scene in detail via the prompt.
   if (imageBase64) {
-    console.log("Image provided but skipping input_reference (size mismatch 1024x1024 vs 1280x720). Using detailed prompt instead.");
-    parts.push("IMPORTANT: The starting frame should closely match the previously generated sponsored post image — same person, same product, same setting, same composition. Animate from that scene.");
+    console.log("Image provided but skipping input_reference (size mismatch). Using detailed prompt instead.");
   }
 
-  // Re-join prompt with the additional image context
   const finalPrompt = parts.join("\n\n");
+
+  // Sora API requires multipart/form-data
+  const formData = new FormData();
+  formData.append("model", "sora-2");
+  formData.append("prompt", finalPrompt);
+  formData.append("seconds", String(seconds));
+  formData.append("size", "1280x720");
+
+  console.log("Sending video request to Sora API (multipart/form-data)");
 
   const response = await fetch("https://api.openai.com/v1/videos", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model: "sora-2",
-      prompt: finalPrompt,
-      seconds,
-      size: "1280x720",
-    }),
+    body: formData,
   });
 
   if (!response.ok) {
@@ -358,13 +348,15 @@ async function getVideoStatus(apiKey: string, body: VideoStatusRequest): Promise
   }
 
   const data = await response.json();
-  console.log("Video status:", data.status);
+  console.log("Video status:", data.status, "full response:", JSON.stringify(data));
   
   return new Response(
     JSON.stringify({ 
       jobId: data.id, 
       status: data.status,
       output: data.output,
+      error: data.error,
+      failure_reason: data.failure_reason,
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
