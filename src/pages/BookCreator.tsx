@@ -282,7 +282,7 @@ const BookCreator = () => {
 
             <div className="flex items-center gap-4">
               <img
-                src={creator.avatar}
+                src={creator.platforms.instagram.avatar}
                 alt={creator.name}
                 className="w-16 h-16 rounded-full object-cover border-2 border-primary/20"
               />

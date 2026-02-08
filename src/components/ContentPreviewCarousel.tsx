@@ -162,7 +162,7 @@ const ContentPreviewCarousel = ({
           {/* Creator info */}
           <div className="flex items-center gap-3">
             <img
-              src={influencer.avatar}
+              src={influencer.platforms.instagram.avatar}
               alt={influencer.name}
               className="w-12 h-12 rounded-full object-cover border-2 border-primary/30"
             />
@@ -209,7 +209,7 @@ const ContentPreviewCarousel = ({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground font-body">Total</span>
               <span className="text-2xl font-display font-bold text-gradient-gold">
-                ${influencer.pricing[contentType]}
+                ${influencer.platforms.instagram.pricing[contentType]}
               </span>
             </div>
 

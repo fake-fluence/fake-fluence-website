@@ -37,7 +37,7 @@ const BookingSummary = ({
     posts.forEach((post) => {
       if (post.selectedVariation !== null) {
         // Base price per post (using post-description pricing)
-        const basePrice = creator.pricing["post-description"];
+        const basePrice = creator.platforms.instagram.pricing["post-description"];
         // Double for both platforms
         const multiplier = post.planEntry.platform === "Both" ? 2 : 1;
         total += basePrice * multiplier;
@@ -66,7 +66,7 @@ const BookingSummary = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <img
-              src={creator.avatar}
+              src={creator.platforms.instagram.avatar}
               alt={creator.name}
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -82,7 +82,7 @@ const BookingSummary = ({
             {posts.map((post) => {
               if (post.selectedVariation === null) return null;
               const variation = post.variations[post.selectedVariation];
-              const price = creator.pricing["post-description"];
+              const price = creator.platforms.instagram.pricing["post-description"];
               const multiplier = post.planEntry.platform === "Both" ? 2 : 1;
 
               return (

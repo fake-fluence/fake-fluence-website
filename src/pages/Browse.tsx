@@ -66,25 +66,25 @@ const Browse = () => {
       );
     }
 
-    // Sort
+    // Sort (using Instagram as default platform for sorting)
     switch (sortBy) {
       case "popular":
-        result = [...result].sort((a, b) => b.followersNum - a.followersNum);
+        result = [...result].sort((a, b) => b.platforms.instagram.followersNum - a.platforms.instagram.followersNum);
         break;
       case "price-low":
-        result = [...result].sort((a, b) => a.pricing.post - b.pricing.post);
+        result = [...result].sort((a, b) => a.platforms.instagram.pricing.post - b.platforms.instagram.pricing.post);
         break;
       case "price-high":
-        result = [...result].sort((a, b) => b.pricing.post - a.pricing.post);
+        result = [...result].sort((a, b) => b.platforms.instagram.pricing.post - a.platforms.instagram.pricing.post);
         break;
       case "engagement":
         result = [...result].sort(
-          (a, b) => parseFloat(b.engagement) - parseFloat(a.engagement)
+          (a, b) => parseFloat(b.platforms.instagram.engagement) - parseFloat(a.platforms.instagram.engagement)
         );
         break;
       case "conversion":
         result = [...result].sort(
-          (a, b) => parseFloat(b.conversionRate) - parseFloat(a.conversionRate)
+          (a, b) => parseFloat(b.platforms.instagram.conversionRate) - parseFloat(a.platforms.instagram.conversionRate)
         );
         break;
     }

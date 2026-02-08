@@ -31,8 +31,9 @@ const generateMatchReason = (
   productCategories: string[],
   nicheMatch: boolean
 ): string => {
-  const engagement = parseFloat(inf.engagement);
-  const conversion = parseFloat(inf.conversionRate);
+  const platformData = inf.platforms.instagram;
+  const engagement = parseFloat(platformData.engagement);
+  const conversion = parseFloat(platformData.conversionRate);
   const parts: string[] = [];
 
   if (nicheMatch) {
@@ -46,21 +47,21 @@ const generateMatchReason = (
   }
 
   if (engagement >= 6) {
-    parts.push(`Their exceptional ${inf.engagement} engagement rate indicates a highly active and loyal community`);
+    parts.push(`Their exceptional ${platformData.engagement} engagement rate indicates a highly active and loyal community`);
   } else if (engagement >= 4.5) {
-    parts.push(`A solid ${inf.engagement} engagement rate shows consistent audience interaction`);
+    parts.push(`A solid ${platformData.engagement} engagement rate shows consistent audience interaction`);
   } else {
-    parts.push(`With ${inf.followers} followers, they offer broad reach across diverse demographics`);
+    parts.push(`With ${platformData.followers} followers, they offer broad reach across diverse demographics`);
   }
 
   if (conversion >= 5) {
-    parts.push(`${inf.conversionRate} conversion rate is well above average, driving strong purchase intent`);
+    parts.push(`${platformData.conversionRate} conversion rate is well above average, driving strong purchase intent`);
   } else if (conversion >= 3.5) {
-    parts.push(`${inf.conversionRate} conversion rate means reliable ROI on sponsored content`);
+    parts.push(`${platformData.conversionRate} conversion rate means reliable ROI on sponsored content`);
   }
 
-  if (inf.avgViews) {
-    parts.push(`averaging ${inf.avgViews} views per post`);
+  if (platformData.avgViews) {
+    parts.push(`averaging ${platformData.avgViews} views per post`);
   }
 
   return parts.join(". ") + ".";
@@ -95,11 +96,11 @@ const getMatchResults = (product: ProductData): MatchResult[] => {
       if (nicheMatch) score += 25;
 
       // Engagement bonus
-      const engagement = parseFloat(inf.engagement);
+      const engagement = parseFloat(inf.platforms.instagram.engagement);
       score += Math.floor(engagement * 3);
 
       // Conversion rate bonus
-      const convRate = parseFloat(inf.conversionRate);
+      const convRate = parseFloat(inf.platforms.instagram.conversionRate);
       score += Math.floor(convRate * 3);
 
       // Verified bonus
