@@ -375,11 +375,16 @@ const BookCreator = () => {
             p.id === postId ? { ...p, videoStatus: "failed" as const, videoJobId: null } : p
           )
         );
+
+        const isModerationBlocked =
+          statusResult.error?.code === "moderation_blocked" ||
+          String(statusResult.error?.message || "").toLowerCase().includes("moderation");
+
         const reason = statusResult.error?.message || statusResult.failure_reason || "Unknown error";
         toast({
           title: "Video generation failed",
-          description: reason.includes("moderation") 
-            ? "Content was blocked by moderation. Try a simpler video prompt." 
+          description: isModerationBlocked
+            ? "Content was blocked by moderation. Try an ultra-simple motion prompt like: 'gentle camera push-in' or leave it blank."
             : `Failed: ${reason}. Please retry.`,
           variant: "destructive",
         });
