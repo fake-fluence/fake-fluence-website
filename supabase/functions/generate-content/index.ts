@@ -37,7 +37,8 @@ interface EditImageRequest {
 
 interface GenerateVideoRequest {
   prompt: string;
-  imageBase64?: string; // optional starting frame
+  imageBase64?: string; // optional starting frame (base64, no data: prefix)
+  imageMime?: "image/png" | "image/jpeg" | "image/webp" | null;
   seconds?: string;
   size?: string;
   influencer?: InfluencerContext | null;
@@ -267,7 +268,7 @@ async function editImage(apiKey: string, body: EditImageRequest): Promise<Respon
 }
 
 async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promise<Response> {
-  const { prompt, imageBase64, seconds = "4", influencer, product, productUrl } = body;
+  const { prompt, imageBase64, imageMime, seconds = "4", influencer, product, productUrl } = body;
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
@@ -318,11 +319,80 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
   // If we have a generated image, pass it as input_reference (starting frame)
   // so Sora animates the exact same AI person from the image
   if (imageBase64) {
-    console.log("Attaching generated image as input_reference for Sora (image-to-video)");
-    
+    const mime: "image/png" | "image/jpeg" | "image/webp" =
+      imageMime === "image/png" || imageMime === "image/jpeg" || imageMime === "image/webp"
+        ? imageMime
+        : "image/jpeg";
+
+    console.log(
+      "Attaching generated image as input_reference for Sora (image-to-video). mime:",
+      mime,
+      "base64_length:",
+      imageBase64.length
+    );
+
     const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
-    const imageBlob = new Blob([imageBytes], { type: "image/png" });
-    formData.append("input_reference", imageBlob, "starting-frame.png");
+
+    // Best-effort dimension logging to debug size mismatch errors
+    const dims = (() => {
+      try {
+        // PNG signature
+        if (
+          mime === "image/png" &&
+          imageBytes.length > 24 &&
+          imageBytes[0] === 0x89 &&
+          imageBytes[1] === 0x50 &&
+          imageBytes[2] === 0x4e &&
+          imageBytes[3] === 0x47
+        ) {
+          const w =
+            (imageBytes[16] << 24) |
+            (imageBytes[17] << 16) |
+            (imageBytes[18] << 8) |
+            imageBytes[19];
+          const h =
+            (imageBytes[20] << 24) |
+            (imageBytes[21] << 16) |
+            (imageBytes[22] << 8) |
+            imageBytes[23];
+          return { width: w >>> 0, height: h >>> 0 };
+        }
+
+        // JPEG SOF markers
+        if (mime === "image/jpeg" && imageBytes.length > 4 && imageBytes[0] === 0xff && imageBytes[1] === 0xd8) {
+          let i = 2;
+          while (i < imageBytes.length) {
+            if (imageBytes[i] !== 0xff) {
+              i += 1;
+              continue;
+            }
+            const marker = imageBytes[i + 1];
+            const length = (imageBytes[i + 2] << 8) | imageBytes[i + 3];
+            // SOF0, SOF1, SOF2, SOF3
+            if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2 || marker === 0xc3) {
+              const h = (imageBytes[i + 5] << 8) | imageBytes[i + 6];
+              const w = (imageBytes[i + 7] << 8) | imageBytes[i + 8];
+              return { width: w, height: h };
+            }
+            if (!length) break;
+            i += 2 + length;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      return null;
+    })();
+
+    if (dims) {
+      console.log("input_reference decoded dimensions:", `${dims.width}x${dims.height}`);
+    } else {
+      console.log("input_reference decoded dimensions: unknown");
+    }
+
+    const ext = mime === "image/jpeg" ? "jpg" : mime === "image/webp" ? "webp" : "png";
+    const imageBlob = new Blob([imageBytes], { type: mime });
+    formData.append("input_reference", imageBlob, `starting-frame.${ext}`);
   }
 
   console.log("Sending video request to Sora API (multipart/form-data), image-to-video:", !!imageBase64);
