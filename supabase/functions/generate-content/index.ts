@@ -95,7 +95,6 @@ async function generateImage(apiKey: string, body: GenerateImageRequest): Promis
       n: 1,
       size,
       quality,
-      response_format: "b64_json",
     }),
   });
 
