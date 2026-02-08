@@ -202,7 +202,7 @@ export const influencers: Influencer[] = [
   {
     id: "4",
     name: "Diego Flex",
-    handle: "@diego.flex",
+    handle: "@diego.flex_",
     category: "men",
     niche: "Fitness & Wellness",
     verified: false,
