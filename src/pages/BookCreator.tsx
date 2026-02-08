@@ -271,7 +271,7 @@ const BookCreator = () => {
       const result = await callGenerateContent("generate-video", {
         prompt,
         imageBase64: post?.imageBase64,
-        seconds: "5",
+        seconds: "4",
       });
 
       setGeneratedPosts((prev) =>
