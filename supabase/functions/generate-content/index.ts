@@ -40,6 +40,10 @@ interface GenerateVideoRequest {
   imageBase64?: string; // optional starting frame
   seconds?: string;
   size?: string;
+  influencer?: InfluencerContext | null;
+  product?: ProductContext | null;
+  productImageBase64?: string | null;
+  productUrl?: string;
 }
 
 interface VideoStatusRequest {
@@ -263,16 +267,43 @@ async function editImage(apiKey: string, body: EditImageRequest): Promise<Respon
 }
 
 async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promise<Response> {
-  const { prompt, imageBase64, seconds = "4" } = body;
+  const { prompt, imageBase64, seconds = "4", influencer, product, productUrl } = body;
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
-  // Sora 2 requires input_reference images to match the target video resolution (1280x720).
-  // Generated images are typically 1024x1024, so we fall back to text-to-video
-  // with a detailed prompt that describes the image content for consistency.
-  const enrichedPrompt = imageBase64
-    ? `${prompt}\n\nIMPORTANT: Base this video on the visual style and content of the sponsored post image that was generated. Maintain the same look, feel, colors, and product placement.`
-    : prompt;
+  // Build a rich prompt that creates a realistic sponsored video
+  const parts: string[] = [];
+
+  parts.push("Create a realistic, cinematic sponsored social media video.");
+
+  if (influencer) {
+    parts.push(`This video features the real person behind the public account ${influencer.handle} (${influencer.name}), a ${influencer.niche} influencer.`);
+    parts.push(`Look up the public persona of ${influencer.handle} on Instagram (${influencer.instagramUrl}) and accurately depict this real person in the video.`);
+    parts.push(`Their bio: ${influencer.bio}`);
+    parts.push("The person should look exactly like the real influencer — same face, same style, same vibe. This must be recognizable as them.");
+  }
+
+  if (product) {
+    parts.push(`The product being featured is "${product.name}": ${product.description}. Categories: ${product.categories.join(", ")}.`);
+    parts.push("The influencer should be visibly holding and showcasing THIS EXACT product in the video — not a generic item.");
+  }
+
+  if (productUrl) {
+    parts.push(`Product reference page: ${productUrl}`);
+  }
+
+  parts.push("The video should look like an authentic sponsored content piece — the influencer naturally using, holding, or presenting the product with genuine enthusiasm. Natural lighting, lifestyle setting, NOT a studio ad.");
+
+  if (imageBase64) {
+    parts.push("IMPORTANT: Use the attached generated image as the visual reference for how the scene should look. Match the styling, person, product placement, and setting from that image.");
+  }
+
+  // Add the user's custom motion/direction prompt
+  if (prompt) {
+    parts.push(`Motion/direction: ${prompt}`);
+  }
+
+  const enrichedPrompt = parts.join("\n\n");
 
   const response = await fetch("https://api.openai.com/v1/videos", {
     method: "POST",
