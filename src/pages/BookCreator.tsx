@@ -384,7 +384,7 @@ const BookCreator = () => {
         toast({
           title: "Video generation failed",
           description: isModerationBlocked
-            ? "Content was blocked by moderation. Try an ultra-simple motion prompt like: 'gentle camera push-in' or leave it blank."
+            ? "Content was blocked by moderation. Try the simplest motion prompt (e.g. 'gentle camera push-in'). If it still blocks, try regenerating the image with no recognizable face / more stylized look."
             : `Failed: ${reason}. Please retry.`,
           variant: "destructive",
         });

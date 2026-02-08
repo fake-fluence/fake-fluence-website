@@ -272,22 +272,13 @@ async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promis
 
   console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
-  // Build a very minimal, moderation-friendly prompt.
-  // For image-to-video, the safest approach is to ask for subtle motion ONLY and to keep the scene unchanged.
-  const parts: string[] = [];
+  // Build the smallest possible prompt.
+  // Note: moderation can still block based on the INPUT IMAGE itself (not just prompt text).
+  const safeMotion = (prompt && prompt.trim() ? prompt.trim() : "gentle camera push-in").slice(0, 160);
 
-  parts.push(
-    "Animate the provided still image with subtle camera motion only. Keep the scene exactly the same. Do not add or remove people, objects, text, or logos."
-  );
-
-  // Keep user motion direction, but keep it optional and short.
-  if (prompt && prompt.trim()) {
-    parts.push(`Motion: ${prompt.trim().slice(0, 160)}`);
-  } else {
-    parts.push("Motion: gentle camera push-in.");
-  }
-
-  const finalPrompt = parts.join(" ");
+  // For image-to-video, keep it to motion only (avoid mentioning people/identity/logos).
+  // For text-to-video (if ever used), this will produce a generic result.
+  const finalPrompt = safeMotion;
 
   // Sora API requires multipart/form-data
   const formData = new FormData();
