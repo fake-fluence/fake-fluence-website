@@ -131,7 +131,7 @@ export function useContentGeneration(): UseContentGenerationReturn {
     setContent((prev) => ({ ...prev, videoStatus: "generating" }));
 
     try {
-      const soraImageBase64 = content.imageBase64
+      const soraInput = content.imageBase64
         ? await prepareSoraInputReference(content.imageBase64, { width: 1280, height: 720 })
         : null;
 
@@ -145,7 +145,8 @@ export function useContentGeneration(): UseContentGenerationReturn {
           },
           body: JSON.stringify({
             prompt,
-            imageBase64: soraImageBase64,
+            imageBase64: soraInput?.base64 ?? null,
+            imageMime: soraInput?.mime ?? null,
             seconds: "4",
           }),
         }
