@@ -139,7 +139,7 @@ async function generateImage(apiKey: string, body: GenerateImageRequest): Promis
     const imageBlob = new Blob([imageBytes], { type: "image/png" });
 
     const formData = new FormData();
-    formData.append("model", "gpt-image-1");
+    formData.append("model", "gpt-image-1.5");
     formData.append("prompt", enrichedPrompt + "\n\nIMPORTANT: The attached image shows the exact product that must appear in the generated photo. The influencer should be holding or using THIS specific product.");
     formData.append("image", imageBlob, "product.png");
     formData.append("size", size);
@@ -185,7 +185,7 @@ async function generateImage(apiKey: string, body: GenerateImageRequest): Promis
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-image-1",
+      model: "gpt-image-1.5",
       prompt: enrichedPrompt,
       n: 1,
       size,
@@ -231,7 +231,7 @@ async function editImage(apiKey: string, body: EditImageRequest): Promise<Respon
   const imageBlob = new Blob([imageBytes], { type: "image/png" });
 
   const formData = new FormData();
-  formData.append("model", "gpt-image-1");
+  formData.append("model", "gpt-image-1.5");
   formData.append("prompt", prompt);
   formData.append("image", imageBlob, "image.png");
 
