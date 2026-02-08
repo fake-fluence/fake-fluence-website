@@ -125,9 +125,6 @@ const GeneratedContentCard = ({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
-              {index + 1}
-            </span>
             <div>
               <CardTitle className="text-base font-medium">
                 {entry.postType}
