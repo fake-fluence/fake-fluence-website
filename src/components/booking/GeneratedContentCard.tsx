@@ -105,9 +105,7 @@ const GeneratedContentCard = ({
   };
 
   const handleGenerateVideo = () => {
-    const prompt =
-      videoPrompt.trim() ||
-      "Subtle camera push-in with gentle parallax. Keep the scene unchanged. No new elements.";
+    const prompt = videoPrompt.trim() || "gentle camera push-in";
     onGenerateVideo(prompt);
     setVideoPrompt("");
     setShowVideoPrompt(false);
