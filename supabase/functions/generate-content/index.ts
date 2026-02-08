@@ -265,36 +265,45 @@ async function editImage(apiKey: string, body: EditImageRequest): Promise<Respon
 async function generateVideo(apiKey: string, body: GenerateVideoRequest): Promise<Response> {
   const { prompt, imageBase64, seconds = "5" } = body;
 
-  // Build the request body for OpenAI Sora 2 API
-  const requestBody: Record<string, unknown> = {
-    model: "sora-2",
-    prompt,
-    seconds: parseInt(seconds),
-    size: "1280x720", // landscape HD
-  };
+  console.log("Creating video with model: sora-2, seconds:", seconds, "has image:", !!imageBase64);
 
-  // If we have an image, add it as input reference
+  let response: globalThis.Response;
+
   if (imageBase64) {
-    requestBody.input = [
-      {
-        type: "image_url",
-        image_url: {
-          url: `data:image/png;base64,${imageBase64}`,
-        },
+    // Image-to-video: must use multipart/form-data with input_reference
+    const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
+    const imageBlob = new Blob([imageBytes], { type: "image/png" });
+
+    const formData = new FormData();
+    formData.append("model", "sora-2");
+    formData.append("prompt", prompt);
+    formData.append("size", "1280x720");
+    formData.append("seconds", seconds);
+    formData.append("input_reference", imageBlob, "frame.png");
+
+    response = await fetch("https://api.openai.com/v1/videos", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
       },
-    ];
+      body: formData,
+    });
+  } else {
+    // Text-to-video: JSON body
+    response = await fetch("https://api.openai.com/v1/videos", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "sora-2",
+        prompt,
+        seconds: parseInt(seconds),
+        size: "1280x720",
+      }),
+    });
   }
-
-  console.log("Creating video with model:", requestBody.model, "seconds:", requestBody.seconds);
-
-  const response = await fetch("https://api.openai.com/v1/videos", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  });
 
   if (!response.ok) {
     const errorText = await response.text();
