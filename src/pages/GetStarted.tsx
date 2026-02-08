@@ -5,7 +5,7 @@ import ProductUploadForm from "@/components/ProductUploadForm";
 import MatchResultCard from "@/components/MatchResultCard";
 import ContentPreviewCarousel from "@/components/ContentPreviewCarousel";
 import { influencers, type Influencer, type ContentType } from "@/data/influencers";
-import { ArrowLeft, Sparkles, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Sparkles, SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -36,6 +36,7 @@ const GetStarted = () => {
   const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
   const [selectedContentType, setSelectedContentType] = useState<ContentType>("post");
   const [showModifySearch, setShowModifySearch] = useState(false);
+  const [showOthers, setShowOthers] = useState(false);
   const { toast } = useToast();
 
   const handleUpload = async (data: ProductData) => {
@@ -123,6 +124,7 @@ const GetStarted = () => {
 
   // Filter results: only show accounts above the minimum match score
   const filteredResults = results.filter((r) => r.matchScore >= MIN_MATCH_SCORE);
+  const otherResults = results.filter((r) => r.matchScore < MIN_MATCH_SCORE);
 
   return (
     <main className="min-h-screen bg-background">
@@ -273,6 +275,50 @@ const GetStarted = () => {
                     onSelect={handleSelectCreator}
                   />
                 ))}
+
+              {/* "Others" toggle for lower-scored creators */}
+              {!showModifySearch && otherResults.length > 0 && (
+                <>
+                  <div className="flex justify-center pt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-body text-sm gap-2"
+                      onClick={() => setShowOthers(!showOthers)}
+                    >
+                      {showOthers ? (
+                        <>
+                          <ChevronUp className="w-4 h-4" />
+                          Hide other creators
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4" />
+                          Browse {otherResults.length} other creator{otherResults.length > 1 ? "s" : ""}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {showOthers && (
+                    <div className="space-y-4 pt-2">
+                      <p className="text-xs text-muted-foreground font-body text-center">
+                        These creators scored below {MIN_MATCH_SCORE}% match — their audience may still be worth exploring.
+                      </p>
+                      {otherResults.map((result, i) => (
+                        <MatchResultCard
+                          key={result.influencer.id}
+                          influencer={result.influencer}
+                          matchScore={result.matchScore}
+                          matchReason={result.matchReason}
+                          index={i}
+                          onSelect={handleSelectCreator}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
